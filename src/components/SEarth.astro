@@ -1,0 +1,366 @@
+---
+---
+
+<section class="s-earth" data-intersect>
+  <div class="s__tag s__tag--tl">// Re-entry sequence</div>
+  <div class="s__tag s__tag--tr">From orbit → Mumbai</div>
+
+  <div class="s__globe">
+    <canvas class="js-globe"></canvas>
+  </div>
+
+  <h2 class="s__title">
+    <span>Crashed</span>
+    <span class="s__title--stroke">Back to</span>
+    <span>Earth</span>
+  </h2>
+
+  <div class="s__tag s__tag--bl">Lat 19.07° N</div>
+  <div class="s__tag s__tag--br">Lng 72.87° E</div>
+</section>
+
+<script>
+  const section = document.querySelector('.s-earth') as HTMLElement
+  if (section) {
+    const canvas = section.querySelector('.js-globe') as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')!
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    // follow the theme's contrast colour so the globe stays visible in any palette
+    let INK = '20,0,0'
+    const toRGB = (c: string) => {
+      c = (c || '').trim()
+      if (c[0] === '#') {
+        c = c.slice(1)
+        if (c.length === 3) c = c.split('').map((x) => x + x).join('')
+        const n = parseInt(c, 16)
+        return ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255)
+      }
+      const m = c.match(/\d+/g)
+      return m ? m.slice(0, 3).join(',') : '20,0,0'
+    }
+    const readInk = () => {
+      INK = toRGB(getComputedStyle(document.documentElement).getPropertyValue('--color-secondary')) || '20,0,0'
+    }
+    readInk()
+    window.addEventListener('vp-recolor', readInk)
+
+    let R = 0
+    let cx = 0
+    let cy = 0
+    let rot = 0
+    let paused = false
+    let S = 0
+
+    // rocket state
+    const rocket = { p: 0, active: true, wait: 0, trail: [] as any[], debris: [] as any[], flash: 0 }
+
+    const size = () => {
+      const wrap = canvas.parentElement as HTMLElement
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      S = wrap.clientWidth
+      canvas.width = S * dpr
+      canvas.height = S * dpr
+      canvas.style.height = S + 'px'
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      R = S * 0.4
+      cx = S / 2
+      cy = S / 2
+    }
+
+    const project = (lat: number, lon: number) => {
+      const x = Math.cos(lat) * Math.sin(lon + rot)
+      const y = Math.sin(lat)
+      const z = Math.cos(lat) * Math.cos(lon + rot)
+      return { x: cx + x * R, y: cy - y * R, z }
+    }
+
+    const stroke = (pts: any[]) => {
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i]
+        const b = pts[i + 1]
+        const front = (a.z + b.z) / 2 > 0
+        ctx.beginPath()
+        ctx.strokeStyle = front ? `rgba(${INK},0.92)` : `rgba(${INK},0.16)`
+        ctx.lineWidth = front ? 1.4 : 1
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
+        ctx.stroke()
+      }
+    }
+
+    // impact + launch points
+    const impact = () => ({ x: cx + R * 0.5, y: cy - R * 0.52 })
+    const launch = () => ({ x: cx + R * 2.4, y: cy - R * 2.6 })
+    const easeIn = (t: number) => t * t
+
+    const updateRocket = () => {
+      if (rocket.flash > 0) rocket.flash *= 0.86
+      // debris
+      rocket.debris.forEach((d) => {
+        d.vy += 0.18
+        d.x += d.vx
+        d.y += d.vy
+        d.life -= 1
+      })
+      rocket.debris = rocket.debris.filter((d) => d.life > 0)
+
+      if (rocket.active) {
+        rocket.p += 0.019
+        const t = easeIn(Math.min(rocket.p, 1))
+        const s = launch()
+        const e = impact()
+        const x = s.x + (e.x - s.x) * t
+        const y = s.y + (e.y - s.y) * t
+        rocket.trail.push({ x, y, a: 1 })
+        if (rocket.trail.length > 26) rocket.trail.shift()
+
+        if (rocket.p >= 1) {
+          // impact!
+          rocket.active = false
+          rocket.wait = 26
+          rocket.flash = 1
+          const e2 = impact()
+          for (let i = 0; i < 14; i++) {
+            rocket.debris.push({
+              x: e2.x,
+              y: e2.y,
+              vx: (Math.random() * 2 - 1) * 3.5,
+              vy: -Math.random() * 4 - 1,
+              life: 30 + Math.random() * 25,
+            })
+          }
+        }
+      } else {
+        rocket.trail.forEach((p) => (p.a *= 0.88))
+        rocket.wait -= 1
+        if (rocket.wait <= 0) {
+          rocket.active = true
+          rocket.p = 0
+          rocket.trail = []
+        }
+      }
+    }
+
+    const drawRocket = () => {
+      const e = impact()
+      // flash ring at impact
+      if (rocket.flash > 0.02) {
+        ctx.beginPath()
+        ctx.strokeStyle = `rgba(${INK},${rocket.flash})`
+        ctx.lineWidth = 2
+        ctx.arc(e.x, e.y, (1 - rocket.flash) * R * 0.5 + 4, 0, Math.PI * 2)
+        ctx.stroke()
+      }
+      // trail
+      ctx.beginPath()
+      for (let i = 0; i < rocket.trail.length - 1; i++) {
+        const a = rocket.trail[i]
+        const b = rocket.trail[i + 1]
+        ctx.strokeStyle = `rgba(${INK},${0.5 * a.a * (i / rocket.trail.length)})`
+        ctx.lineWidth = 2 * (i / rocket.trail.length) + 0.4
+        ctx.beginPath()
+        ctx.moveTo(a.x, a.y)
+        ctx.lineTo(b.x, b.y)
+        ctx.stroke()
+      }
+      // rocket body
+      if (rocket.active && rocket.trail.length) {
+        const head = rocket.trail[rocket.trail.length - 1]
+        const s = launch()
+        const e2 = impact()
+        const ang = Math.atan2(e2.y - s.y, e2.x - s.x)
+        ctx.save()
+        ctx.translate(head.x, head.y)
+        ctx.rotate(ang)
+        ctx.fillStyle = `rgba(${INK},0.95)`
+        ctx.beginPath()
+        ctx.moveTo(8, 0)
+        ctx.lineTo(-6, -4)
+        ctx.lineTo(-6, 4)
+        ctx.closePath()
+        ctx.fill()
+        ctx.restore()
+      }
+      // debris
+      ctx.fillStyle = `rgba(${INK},0.9)`
+      rocket.debris.forEach((d) => {
+        ctx.fillRect(d.x - 1.5, d.y - 1.5, 3, 3)
+      })
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // outline
+      ctx.beginPath()
+      ctx.strokeStyle = `rgba(${INK},0.92)`
+      ctx.lineWidth = 1.6
+      ctx.arc(cx, cy, R, 0, Math.PI * 2)
+      ctx.stroke()
+
+      for (let m = 0; m < 12; m++) {
+        const lon = (m / 12) * Math.PI * 2
+        const pts = []
+        for (let lat = -Math.PI / 2; lat <= Math.PI / 2 + 0.001; lat += Math.PI / 36) {
+          pts.push(project(lat, lon))
+        }
+        stroke(pts)
+      }
+      for (let p = 1; p < 9; p++) {
+        const lat = -Math.PI / 2 + (p / 9) * Math.PI
+        const pts = []
+        for (let lon = 0; lon <= Math.PI * 2 + 0.001; lon += Math.PI / 36) {
+          pts.push(project(lat, lon))
+        }
+        stroke(pts)
+      }
+
+      if (!paused) {
+        rot += 0.0045
+        updateRocket()
+      }
+      drawRocket()
+
+      requestAnimationFrame(draw)
+    }
+
+    size()
+    window.addEventListener('resize', size)
+    section.addEventListener('intersect', (e: any) => {
+      paused = !e.detail.isIntersecting
+    })
+
+    if (reduce) {
+      paused = true
+      draw()
+    } else {
+      requestAnimationFrame(draw)
+    }
+  }
+</script>
+
+<style lang="scss">
+  .s-earth {
+    position: relative;
+    z-index: 2;
+
+    @include flex(column, center, center);
+
+    padding: 8rem 1.5rem;
+    min-height: 90vh;
+
+    background: color(primary);
+    color: color(secondary);
+
+    overflow: hidden;
+
+    @include mq(phone) {
+      padding: 5rem 1rem;
+      min-height: 70vh;
+    }
+
+    &:before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+
+      width: 100%;
+      height: 1px;
+
+      background: color(secondary);
+
+      content: '';
+    }
+
+    .s__globe {
+      position: relative;
+      z-index: 1;
+
+      width: min(60vmin, 32rem);
+      aspect-ratio: 1;
+
+      canvas {
+        display: block;
+        width: 100%;
+      }
+    }
+
+    .s__title {
+      position: relative;
+      z-index: 2;
+
+      margin: 2.5rem 0 0;
+
+      font: 700 min(11vw, 7.5rem) / 0.9 font-family(bigger);
+      letter-spacing: -0.01em;
+      text-align: center;
+      text-transform: uppercase;
+
+      span {
+        display: inline;
+      }
+
+      &--stroke {
+        color: color(primary);
+        -webkit-text-stroke: 2px color(secondary);
+      }
+    }
+
+    .s__tag {
+      position: absolute;
+      z-index: 3;
+
+      font: 700 0.75rem / 1 font-family(fraktion);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+
+      @include mq(phone) {
+        font-size: 0.5625rem;
+      }
+
+      &--tl {
+        top: 2rem;
+        left: 1.5rem;
+      }
+
+      &--tr {
+        top: 2rem;
+        right: 1.5rem;
+      }
+
+      &--bl {
+        bottom: 2rem;
+        left: 1.5rem;
+      }
+
+      &--br {
+        bottom: 2rem;
+        right: 1.5rem;
+      }
+
+      @include mq(phone) {
+        &--tl,
+        &--tr {
+          top: 1rem;
+        }
+
+        &--bl,
+        &--br {
+          bottom: 1rem;
+        }
+
+        &--tl,
+        &--bl {
+          left: 1rem;
+        }
+
+        &--tr,
+        &--br {
+          right: 1rem;
+        }
+      }
+    }
+  }
+</style>

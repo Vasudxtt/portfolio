@@ -1,0 +1,149 @@
+<footer class="site-foot">
+  <a href="#top" class="site-foot__bye js-foot-link">
+    <span class="site-foot__dot" aria-hidden="true"></span>
+    <span class="site-foot__word"><span class="js-foot-bye">Goodbye</span></span>
+    <span class="u-sr-only">Vasudutt Pareek — back to top</span>
+  </a>
+
+  <div class="site-foot__meta">
+    <span>Vasudutt Pareek © 2026</span>
+    <span class="site-foot__top">Back to top ↑</span>
+  </div>
+</footer>
+
+<script>
+  const el = document.querySelector('.js-foot-bye') as HTMLElement
+  if (el) {
+    const byes = [
+      'Goodbye', 'Au revoir', 'Adiós', 'Ciao', 'अलविदा',
+      'さようなら', 'Tschüss', 'Tot ziens', '안녕', 'Adeus', 'До свидания',
+    ]
+    let i = 0
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!reduce) {
+      setInterval(() => {
+        el.style.transition =
+          'transform .34s cubic-bezier(.7,0,.3,1), opacity .34s ease'
+        el.style.transform = 'translateY(-115%)'
+        el.style.opacity = '0'
+        setTimeout(() => {
+          i = (i + 1) % byes.length
+          el.textContent = byes[i]
+          el.style.transition = 'none'
+          el.style.transform = 'translateY(115%)'
+          requestAnimationFrame(() => {
+            el.style.transition =
+              'transform .5s cubic-bezier(.16,1,.3,1), opacity .5s ease'
+            el.style.transform = 'translateY(0)'
+            el.style.opacity = '1'
+          })
+        }, 350)
+      }, 2600)
+    }
+  }
+</script>
+
+<style lang="scss">
+  .site-foot {
+    @include flex(column, center, center);
+
+    position: relative;
+    z-index: 3;
+
+    padding: 5rem 1.5rem 3.5rem;
+    gap: 1.75rem;
+
+    border-top: 1px solid color(secondary);
+    overflow: hidden;
+
+    @include mq(phone) {
+      padding: 3rem 1rem 2.25rem;
+      gap: 1.25rem;
+    }
+
+    &__bye {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.16em;
+
+      color: color(secondary);
+      font: 700 clamp(3.5rem, 15vw, 12rem) / 0.85 font-family(bigger);
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      text-decoration: none;
+
+      transition: transform 0.6s ease(out-quint);
+      will-change: transform;
+
+      &:hover {
+        transform: scale(1.04);
+      }
+
+      &:hover .site-foot__dot {
+        transform: scale(1.4);
+      }
+    }
+
+    &__dot {
+      flex-shrink: 0;
+
+      width: 0.16em;
+      height: 0.16em;
+
+      background: color(secondary);
+      border-radius: 50%;
+
+      transform-origin: 50% 50%;
+      transition: transform 0.6s ease(out-quint);
+
+      animation: foot-pulse 2.4s ease(in-out-quint) infinite;
+    }
+
+    @keyframes foot-pulse {
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.65;
+        transform: scale(0.82);
+      }
+    }
+
+    &__word {
+      display: inline-block;
+      overflow: hidden;
+      padding: 0 0.04em;
+
+      .js-foot-bye {
+        display: inline-block;
+        will-change: transform, opacity;
+      }
+    }
+
+    &__meta {
+      @include flex(row, center, center);
+
+      gap: 1.5rem;
+      flex-wrap: wrap;
+
+      font: 700 0.75rem / 1 font-family(fraktion);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: color(secondary);
+
+      @include mq(phone) {
+        font-size: 0.625rem;
+        gap: 1rem;
+      }
+    }
+
+    &__top {
+      position: relative;
+      cursor: default;
+      opacity: 0.6;
+    }
+  }
+</style>

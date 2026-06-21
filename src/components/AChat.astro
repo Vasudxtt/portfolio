@@ -1,0 +1,400 @@
+---
+// ECHO — Vasudutt's portfolio assistant (rule-based, no backend)
+---
+
+<button class="ai-fab js-ai-fab" type="button" aria-label="Chat with ECHO">
+  <span class="ai-fab__ring"></span>
+  <svg class="ai-mask" viewBox="0 0 40 40" aria-hidden="true">
+    <path class="ai-mask__hood" d="M20 5 C29 5 34 11 34 20 C34 30 27.5 35 20 35 C12.5 35 6 30 6 20 C6 11 11 5 20 5 Z" />
+    <path class="ai-mask__eye" d="M11 17.5 L18 21 L18 25 L11 23.2 Z" />
+    <path class="ai-mask__eye" d="M29 17.5 L22 21 L22 25 L29 23.2 Z" />
+  </svg>
+</button>
+
+<div class="ai-panel js-ai-panel" aria-hidden="true">
+  <div class="ai-panel__head">
+    <div class="ai-panel__id">
+      <span class="ai-panel__orb">
+        <svg class="ai-mask" viewBox="0 0 40 40" aria-hidden="true">
+          <path class="ai-mask__hood" d="M20 5 C29 5 34 11 34 20 C34 30 27.5 35 20 35 C12.5 35 6 30 6 20 C6 11 11 5 20 5 Z" />
+          <path class="ai-mask__eye" d="M11 17.5 L18 21 L18 25 L11 23.2 Z" />
+          <path class="ai-mask__eye" d="M29 17.5 L22 21 L22 25 L29 23.2 Z" />
+        </svg>
+      </span>
+      <div>
+        <div class="ai-panel__name">ECHO</div>
+        <div class="ai-panel__sub">Vasudutt's assistant</div>
+      </div>
+    </div>
+    <button class="ai-panel__close js-ai-close" type="button" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="ai-panel__msgs js-ai-msgs"></div>
+
+  <div class="ai-panel__quick js-ai-quick">
+    <button type="button" data-q="What's your tech stack?">Tech stack</button>
+    <button type="button" data-q="Show me your projects">Projects</button>
+    <button type="button" data-q="Tell me about your experience">Experience</button>
+    <button type="button" data-q="How can I hire you?">Hire</button>
+  </div>
+
+  <div class="ai-panel__input">
+    <input type="text" class="js-ai-text" placeholder="Ask me anything…" />
+    <button type="button" class="js-ai-send" aria-label="Send">→</button>
+  </div>
+</div>
+
+<script>
+  const KB = [
+    { q: ['skill', 'stack', 'tech', 'know', 'use', 'language'], a: "Vasu is a <b>Full-Stack MERN Developer</b>.<br><br>Frontend — React, Next.js, TypeScript, HTML/CSS<br>Backend — Node, Express, PHP<br>Data — MongoDB, MySQL<br>CMS — WordPress, Shopify<br>Tools — Git, REST API, Vercel, Netlify, Three.js." },
+    { q: ['project', 'work', 'build', 'made', 'pokedex', 'cafe', 'roadmap'], a: "A few highlights:<br><br><b>Roadmap2077</b> — AI career platform (Node · Groq)<br><b>CafeFindr</b> — luxury maps app (Leaflet · Three.js)<br><b>OriginalityAI</b> — AI plagiarism detection<br><b>Coffee Tracker</b> — React + Firebase<br><br>Scroll to <b>WORK</b> to fly through all 10." },
+    { q: ['experience', 'job', 'intern', 'itxit', 'company'], a: "Currently <b>Jr. Web Developer at iTXIT Pro</b> (June 2025 – present) — building WordPress sites, custom PHP/MySQL backends, and shipping SEO-tuned client work end to end." },
+    { q: ['hire', 'contact', 'together', 'freelance', 'cost', 'price', 'email', 'reach'], a: "Let's talk.<br><br>✦ vasuduttpareek@gmail.com<br>✦ +91 94617 44900<br><br>Hit <b>Hire me</b> in the header to open the contact form." },
+    { q: ['certificate', 'cert', 'meta', 'google', 'cloud', 'award'], a: "Verified credentials:<br><br>✦ Front End Developer — <b>Meta</b><br>✦ Cloud Digital Leader — <b>Google</b><br>✦ Computer Networking — <b>Google</b><br><br>See the <b>Awards</b> section for links." },
+    { q: ['education', 'vit', 'college', 'degree', 'cgpa', 'gpa', 'study'], a: "<b>VIT Vellore</b> — B.Tech Computer Science, CGPA <b>7.62</b>, Class of 2026." },
+    { q: ['who', 'you', 'name', 'echo', 'bot', 'assistant'], a: "I'm <b>ECHO</b> — Vasudutt's portfolio assistant. Ask me about his stack, projects, experience, or how to work with him." },
+    { q: ['hello', 'hi', 'hey', 'hola', 'sup', 'greet'], a: "Hey 👋 I'm ECHO. Want the quick tour — stack, projects, experience, or how to hire Vasu?" },
+    { q: ['react', 'node', 'mongo', 'express', 'wordpress', 'php', 'next'], a: "Yep — right in his wheelhouse. MERN core (React, Node, Mongo, Express) + WordPress/PHP/MySQL for CMS work. Want to see related projects?" },
+  ]
+  const reply = (q: string) => {
+    q = q.toLowerCase()
+    for (const k of KB) for (const t of k.q) if (q.indexOf(t) > -1) return k.a
+    return "Good question — I'm still learning that one. Reach Vasu directly at <b>vasuduttpareek@gmail.com</b> or hit <b>Hire me</b> in the header."
+  }
+
+  const fab = document.querySelector('.js-ai-fab') as HTMLElement
+  const panel = document.querySelector('.js-ai-panel') as HTMLElement
+  const closeBtn = document.querySelector('.js-ai-close') as HTMLElement
+  const msgs = document.querySelector('.js-ai-msgs') as HTMLElement
+  const input = document.querySelector('.js-ai-text') as HTMLInputElement
+  const send = document.querySelector('.js-ai-send') as HTMLElement
+  const quick = document.querySelector('.js-ai-quick') as HTMLElement
+  let greeted = false
+
+  const add = (text: string, isUser: boolean) => {
+    const d = document.createElement('div')
+    d.className = 'ai-msg ' + (isUser ? 'ai-msg--user' : 'ai-msg--ai')
+    d.innerHTML = text
+    msgs.appendChild(d)
+    msgs.scrollTop = msgs.scrollHeight
+  }
+  const ask = (text: string) => {
+    if (!text.trim()) return
+    add(text, true)
+    input.value = ''
+    const t = document.createElement('div')
+    t.className = 'ai-msg ai-msg--ai'
+    t.innerHTML = '<span class="ai-typing"><i></i><i></i><i></i></span>'
+    msgs.appendChild(t)
+    msgs.scrollTop = msgs.scrollHeight
+    setTimeout(() => { t.remove(); add(reply(text), false) }, 600 + Math.random() * 500)
+  }
+
+  if (fab) {
+    fab.addEventListener('click', () => {
+      const on = panel.classList.toggle('is-open')
+      panel.setAttribute('aria-hidden', String(!on))
+      if (on && !greeted) {
+        greeted = true
+        setTimeout(() => add("Hey 👋 I'm <b>ECHO</b>, Vasudutt's assistant. Ask me anything about his work.", false), 250)
+      }
+    })
+    closeBtn.addEventListener('click', () => { panel.classList.remove('is-open'); panel.setAttribute('aria-hidden', 'true') })
+    send.addEventListener('click', () => ask(input.value))
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') ask(input.value) })
+    quick.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('button')
+      if (b) ask(b.getAttribute('data-q') || '')
+    })
+  }
+</script>
+
+<style lang="scss">
+  .ai-fab {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 90;
+
+    @include flex(row, center, center);
+
+    width: 3.75rem;
+    height: 3.75rem;
+
+    background: #16121a;
+    border: 0;
+    border-radius: 999rem;
+    cursor: pointer;
+
+    box-shadow: 0 0.6rem 2rem rgba(20, 0, 0, 0.45);
+
+    @include mq(phone) {
+      right: 1rem;
+      bottom: 1rem;
+      width: 3.25rem;
+      height: 3.25rem;
+    }
+
+    &__ring {
+      position: absolute;
+      inset: -2px;
+      border: 1.5px solid color(primary);
+      border-radius: 999rem;
+      animation: ai-ring 2.6s ease(in-out-quint) infinite;
+    }
+
+    .ai-mask {
+      position: relative;
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  .ai-mask {
+    color: color(primary);
+    filter: drop-shadow(0 0 4px color(primary));
+
+    &__hood {
+      fill: rgba(255, 246, 242, 0.06);
+      stroke: currentColor;
+      stroke-width: 1.4;
+    }
+
+    &__eye {
+      fill: currentColor;
+    }
+  }
+
+  @keyframes ai-ring {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.85;
+    }
+    50% {
+      transform: scale(1.22);
+      opacity: 0;
+    }
+  }
+
+  .ai-panel {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 6rem;
+    z-index: 91;
+
+    display: flex;
+    flex-direction: column;
+
+    width: min(22rem, calc(100vw - 2rem));
+    height: 30rem;
+    max-height: calc(100vh - 8rem);
+
+    background: #16121a;
+    border: 1px solid color(primary);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(16px) scale(0.97);
+    transform-origin: bottom right;
+    transition: all 0.45s ease(out-quint);
+
+    @include mq(phone) {
+      right: 1rem;
+      bottom: 5rem;
+    }
+
+    &.is-open {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+
+    &__head {
+      @include flex(row, center, space-between);
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(255, 246, 242, 0.14);
+    }
+
+    &__id {
+      @include flex(row, center, flex-start);
+      gap: 0.65rem;
+    }
+
+    &__orb {
+      @include flex(row, center, center);
+
+      width: 2rem;
+      height: 2rem;
+
+      .ai-mask {
+        width: 2rem;
+        height: 2rem;
+      }
+    }
+
+    &__name {
+      color: #fff6f2;
+      font: 700 1.05rem / 1 font-family(bigger);
+      letter-spacing: 0.02em;
+    }
+
+    &__sub {
+      color: rgba(255, 246, 242, 0.5);
+      font: 400 0.625rem / 1.2 font-family(fraktion);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    &__close {
+      background: none;
+      border: 0;
+      color: rgba(255, 246, 242, 0.6);
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    &__msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+
+      scrollbar-width: thin;
+      scrollbar-color: color(primary) transparent;
+
+      &::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: color(primary);
+        border-radius: 999rem;
+      }
+
+      :global(.ai-msg) {
+        max-width: 86%;
+        padding: 0.6rem 0.75rem;
+        font: 400 0.84rem / 1.45 font-family(editorial);
+      }
+
+      :global(.ai-msg b) {
+        color: color(primary);
+        font-weight: 700;
+      }
+
+      :global(.ai-msg--ai) {
+        align-self: flex-start;
+        background: rgba(255, 246, 242, 0.06);
+        border: 1px solid rgba(255, 246, 242, 0.12);
+        color: rgba(255, 246, 242, 0.86);
+      }
+
+      :global(.ai-msg--user) {
+        align-self: flex-end;
+        background: color(primary);
+        color: color(secondary);
+      }
+
+      :global(.ai-typing) {
+        display: inline-flex;
+        gap: 4px;
+      }
+
+      :global(.ai-typing i) {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255, 246, 242, 0.5);
+        animation: ai-typing 1.2s infinite;
+      }
+
+      :global(.ai-typing i:nth-child(2)) {
+        animation-delay: 0.2s;
+      }
+
+      :global(.ai-typing i:nth-child(3)) {
+        animation-delay: 0.4s;
+      }
+    }
+
+    &__quick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0 0.8rem 0.7rem;
+
+      button {
+        background: none;
+        border: 1px solid rgba(255, 246, 242, 0.16);
+        color: rgba(255, 246, 242, 0.75);
+        font: 400 0.6rem / 1 font-family(fraktion);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.45rem 0.6rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+
+        &:hover {
+          border-color: color(primary);
+          color: color(primary);
+        }
+      }
+    }
+
+    &__input {
+      display: flex;
+      border-top: 1px solid rgba(255, 246, 242, 0.14);
+
+      input {
+        flex: 1;
+        background: none;
+        border: 0;
+        outline: none;
+        color: #fff6f2;
+        font: 400 0.86rem / 1 font-family(editorial);
+        padding: 0.95rem 1rem;
+
+        &::placeholder {
+          color: rgba(255, 246, 242, 0.4);
+        }
+      }
+
+      button {
+        width: 3rem;
+        background: none;
+        border: 0;
+        border-left: 1px solid rgba(255, 246, 242, 0.14);
+        color: color(primary);
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background 0.25s ease;
+
+        &:hover {
+          background: rgba(255, 246, 242, 0.05);
+        }
+      }
+    }
+  }
+
+  @keyframes ai-typing {
+    0%,
+    60%,
+    100% {
+      opacity: 0.3;
+      transform: translateY(0);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+</style>

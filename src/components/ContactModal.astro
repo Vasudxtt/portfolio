@@ -1,0 +1,305 @@
+---
+---
+
+<div class="contact-modal js-contact-modal">
+  <div class="contact-modal__bg">
+    <video
+      class="contact-modal__video"
+      src="/assets/video/contact-bg.mp4"
+      autoplay
+      loop
+      muted
+      playsinline
+    ></video>
+  </div>
+  
+  <div class="contact-modal__inner">
+    <button class="contact-modal__close js-contact-close" type="button">Close</button>
+    
+    <div class="contact-modal__content">
+      <h2 class="contact-modal__title">Let's Connect</h2>
+      
+      <form class="contact-form js-contact-form">
+        <div class="contact-form__field">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required placeholder="Your Name" />
+        </div>
+        
+        <div class="contact-form__field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required placeholder="Your Email" />
+        </div>
+        
+        <div class="contact-form__field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="4" required placeholder="Tell me about your project..."></textarea>
+        </div>
+        
+        <button type="submit" class="contact-form__submit">Send Message</button>
+        <p class="contact-form__status js-form-status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style lang="scss">
+  .contact-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    
+    &.is-active {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+    
+    &__bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+      }
+    }
+    
+    &__video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    &__inner {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    &__close {
+      position: absolute;
+      top: 2rem;
+      right: 2rem;
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: var(--display);
+      font-size: 1.5rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      
+      &:hover {
+        opacity: 0.7;
+      }
+    }
+    
+    &__content {
+      width: 100%;
+      max-width: 600px;
+      color: #fff;
+    }
+    
+    &__title {
+      font-family: var(--display);
+      font-size: 4rem;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+    }
+  }
+  
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    
+    &__field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      
+      label {
+        font-family: var(--body);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+      }
+      
+      input, textarea {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem;
+        color: #fff;
+        font-family: var(--body);
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+        
+        &:focus {
+          border-color: #fff;
+        }
+      }
+    }
+    
+    &__submit {
+      background: #e4123d;
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      font-family: var(--display);
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      align-self: flex-start;
+      margin-top: 1rem;
+      
+      &:hover {
+        background: #ff1a4a;
+      }
+    }
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap'
+  
+  const modal = document.querySelector('.js-contact-modal')
+  const closeBtn = document.querySelector('.js-contact-close')
+  const form = document.querySelector('.js-contact-form')
+  const outro = document.querySelector('.js-outro')
+  const outroText = document.querySelector('.js-outro-text')
+  const trigger = document.querySelector('.js-contact-trigger')
+  
+  const openModal = (e) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    modal.classList.add('is-active')
+    gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.5 })
+    const video = modal.querySelector('video')
+    if (video) video.play().catch(() => {})
+  }
+
+  // any element flagged as a contact trigger opens the modal
+  document.querySelectorAll('.js-contact-trigger').forEach((el) => {
+    el.addEventListener('click', openModal)
+  })
+  
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      gsap.to(modal, {
+        opacity: 0,
+        duration: 0.5,
+        onComplete: () => {
+          modal.classList.remove('is-active')
+        }
+      })
+    })
+  }
+  
+  const playGoodbye = () => {
+    gsap.to(modal, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => {
+        modal.classList.remove('is-active')
+
+        gsap.set(outro, { pointerEvents: 'auto', opacity: 1 })
+        const goodbyes = ['Goodbye', 'Au revoir', 'Adiós', 'Ciao', 'अलविदा', 'Sayonara']
+
+        const tl = gsap.timeline({
+          onComplete: () => {
+            gsap.to(outro, {
+              opacity: 0,
+              duration: 1,
+              delay: 0.6,
+              onComplete: () => {
+                gsap.set(outro, { pointerEvents: 'none' })
+                form.reset()
+                const b = form.querySelector('button')
+                b.textContent = 'Send Message'
+                b.style.pointerEvents = 'auto'
+                const ok = form.querySelector('.js-form-status')
+                if (ok) ok.textContent = ''
+              },
+            })
+          },
+        })
+
+        goodbyes.forEach((word, i) => {
+          tl.to(outroText, {
+            duration: 0.1,
+            onStart: () => { outroText.textContent = word },
+            opacity: 1,
+            ease: 'none',
+          }).to(outroText, {
+            duration: 0.15,
+            opacity: i === goodbyes.length - 1 ? 1 : 0,
+            ease: 'none',
+            delay: 0.15,
+          })
+        })
+      },
+    })
+  }
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault()
+
+      const btn = form.querySelector('button')
+      const status = form.querySelector('.js-form-status')
+      btn.textContent = 'Sending...'
+      btn.style.pointerEvents = 'none'
+
+      const data = {
+        from_name: (form.querySelector('#name') as HTMLInputElement)?.value || '',
+        from_email: (form.querySelector('#email') as HTMLInputElement)?.value || '',
+        phone: 'Not provided',
+        message: (form.querySelector('#message') as HTMLTextAreaElement)?.value || '',
+        to_email: 'vasuduttpareek@gmail.com',
+        reply_to: (form.querySelector('#email') as HTMLInputElement)?.value || '',
+      }
+
+      const emailjs = (window as any).emailjs
+
+      const fail = (err: any) => {
+        btn.textContent = 'Send Message'
+        btn.style.pointerEvents = 'auto'
+        if (status) status.textContent =
+          'Something went wrong — email vasuduttpareek@gmail.com directly.'
+        console.error('EmailJS error', err)
+      }
+
+      if (!emailjs) {
+        fail('EmailJS not loaded')
+        return
+      }
+
+      emailjs
+        .send('service_12pas6m', 'template_jy9swrv', data)
+        .then(playGoodbye, fail)
+    })
+  }
+</script>

@@ -1,0 +1,542 @@
+---
+// THE PITCH — tech stack as a squad on a green field.
+// Click a player (or a bench skill) to scout the experience behind it.
+const xi = [
+  { n: 1, t: 'JavaScript', x: 6, y: 50, exp: '1.2 yrs', note: 'the daily driver' },
+  { n: 2, t: 'HTML / CSS', x: 19, y: 15, exp: '1.2 yrs', note: 'pixel-perfect layouts' },
+  { n: 3, t: 'Node.js', x: 19, y: 38, exp: '1.2 yrs', note: 'APIs & services' },
+  { n: 4, t: 'Express.js', x: 19, y: 62, exp: '1.2 yrs', note: 'REST backends' },
+  { n: 5, t: 'MongoDB', x: 19, y: 85, exp: '1.2 yrs', note: 'document data' },
+  { n: 6, t: 'REST API', x: 34, y: 25, exp: '1.2 yrs', note: 'design & integration' },
+  { n: 7, t: 'Git', x: 34, y: 50, exp: '1.2 yrs', note: 'version control' },
+  { n: 8, t: 'MySQL', x: 34, y: 75, exp: '1.2 yrs', note: 'relational data' },
+  { n: 9, t: 'React.js', x: 51, y: 25, exp: '1.2 yrs', note: 'primary weapon' },
+  { n: 10, t: 'TypeScript', x: 51, y: 50, exp: '1.2 yrs', note: 'type-safe builds' },
+  { n: 11, t: 'Next.js', x: 51, y: 75, exp: '1.2 yrs', note: 'SSR & routing' },
+  { n: 12, t: 'Tailwind CSS', x: 67, y: 20, exp: '1.2 yrs', note: 'rapid styling' },
+  { n: 13, t: 'WordPress', x: 67, y: 50, exp: '1.2 yrs', note: 'live client work' },
+  { n: 14, t: 'PHP', x: 67, y: 80, exp: '1.2 yrs', note: 'CMS backends' },
+  { n: 15, t: 'Three.js', x: 83, y: 35, exp: '1.2 yrs', note: 'WebGL & 3D' },
+  { n: 16, t: 'Firebase', x: 83, y: 65, exp: '1.2 yrs', note: 'realtime + auth' },
+]
+
+const bench = [
+  { t: 'Python', exp: '1.2 yrs' },
+  { t: 'Vercel', exp: '1.2 yrs' },
+  { t: 'Netlify', exp: '1.2 yrs' },
+  { t: 'WPBakery', exp: '1.2 yrs' },
+  { t: 'Framer', exp: '1.2 yrs' },
+  { t: 'Groq API', exp: '1.2 yrs' },
+  { t: 'Shopify', exp: '1.2 yrs' },
+  { t: 'HubSpot', exp: '1.2 yrs' },
+  { t: 'Leaflet.js', exp: '1.2 yrs' },
+]
+---
+
+<section class="s-pitch" id="stack" data-intersect>
+  <canvas class="s__snow js-pitch-snow" aria-hidden="true"></canvas>
+
+  <div class="s__head">
+    <div class="s__tag">// The squad — 16 starters, tap to scout</div>
+    <h2 class="s__title">The Pitch</h2>
+    <div class="s__readout js-readout">
+      <span class="s__readout__hint">Tap any player or sub to reveal the years behind it.</span>
+    </div>
+  </div>
+
+  <div class="s__field-wrap">
+    <div class="s__field js-field">
+      <div class="s__field__turf"></div>
+
+      <svg class="s__field__lines" viewBox="0 0 1050 680" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <g fill="none" stroke="#fff6f2" stroke-width="2" vector-effect="non-scaling-stroke">
+          <rect x="3" y="3" width="1044" height="674" />
+          <line x1="525" y1="3" x2="525" y2="677" />
+          <circle cx="525" cy="340" r="91.5" />
+          <circle cx="525" cy="340" r="3" fill="#fff6f2" />
+          <rect x="3" y="139" width="162" height="402" />
+          <rect x="3" y="248.5" width="52" height="183" />
+          <circle cx="110" cy="340" r="3" fill="#fff6f2" />
+          <path d="M 165 267 A 91.5 91.5 0 0 1 165 413" />
+          <rect x="885" y="139" width="162" height="402" />
+          <rect x="995" y="248.5" width="52" height="183" />
+          <circle cx="940" cy="340" r="3" fill="#fff6f2" />
+          <path d="M 885 267 A 91.5 91.5 0 0 0 885 413" />
+          <path d="M 3 13 A 10 10 0 0 1 13 3" />
+          <path d="M 1037 3 A 10 10 0 0 1 1047 13" />
+          <path d="M 1047 667 A 10 10 0 0 1 1037 677" />
+          <path d="M 13 677 A 10 10 0 0 1 3 667" />
+        </g>
+      </svg>
+
+      <div class="s__players js-players">
+        {
+          xi.map((p) => (
+            <button
+              class="s__player js-player"
+              style={`left:${p.x}%;top:${p.y}%`}
+              data-x={p.x}
+              data-y={p.y}
+              data-name={p.t}
+              data-exp={p.exp}
+              data-note={p.note}
+              type="button"
+            >
+              <span class="s__player__badge">
+                <span class="s__player__num">{p.n}</span>
+              </span>
+              <span class="s__player__name">{p.t}</span>
+            </button>
+          ))
+        }
+        <div class="s__ball js-ball" style="left:6%;top:50%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="s__bench">
+    <div class="s__bench__tag">// On the bench — tap for years</div>
+    <div class="s__pills">
+      {
+        bench.map((b) => (
+          <button class="s__pill js-sub" type="button" data-name={b.t} data-exp={b.exp}>
+            {b.t}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap'
+
+  const section = document.querySelector('.s-pitch') as HTMLElement
+  if (section) {
+    const ball = section.querySelector('.js-ball') as HTMLElement
+    const players = Array.from(section.querySelectorAll('.js-player')) as HTMLElement[]
+    const subs = Array.from(section.querySelectorAll('.js-sub')) as HTMLElement[]
+    const readout = section.querySelector('.js-readout') as HTMLElement
+
+    const pos = players.map((p) => ({
+      x: parseFloat(p.dataset.x || '50'),
+      y: parseFloat(p.dataset.y || '50'),
+      el: p,
+    }))
+
+    /* ball build-up touching the whole squad */
+    const order = [0, 1, 5, 8, 6, 2, 9, 12, 3, 10, 13, 7, 11, 14, 4, 15]
+    let tl: gsap.core.Timeline | null = null
+    const build = () => {
+      if (tl) tl.kill()
+      tl = gsap.timeline({ repeat: -1, paused: true })
+      order.forEach((idx) => {
+        const p = pos[idx]
+        if (!p) return
+        tl!
+          .to(ball, {
+            left: p.x + '%',
+            top: p.y + '%',
+            duration: 0.5,
+            ease: 'power2.inOut',
+          }, '+=0.1')
+          .to(ball, { scale: 1.3, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.out' }, '<+0.38')
+      })
+    }
+    build()
+    section.addEventListener('intersect', (e: any) => {
+      if (!tl) return
+      e.detail.isIntersecting ? tl.play() : tl.pause()
+    })
+
+    /* click to scout */
+    const select = (name: string, exp: string, note?: string) => {
+      readout.innerHTML =
+        `<span class="s__readout__name">${name}</span>` +
+        `<span class="s__readout__exp">${exp}</span>` +
+        (note ? `<span class="s__readout__note">${note}</span>` : '')
+      readout.classList.add('is-filled')
+    }
+    players.forEach((p) => {
+      p.addEventListener('click', () => {
+        players.forEach((o) => o.classList.remove('is-selected'))
+        subs.forEach((o) => o.classList.remove('is-selected'))
+        p.classList.add('is-selected')
+        select(p.dataset.name!, p.dataset.exp!, p.dataset.note)
+      })
+    })
+    subs.forEach((s) => {
+      s.addEventListener('click', () => {
+        players.forEach((o) => o.classList.remove('is-selected'))
+        subs.forEach((o) => o.classList.remove('is-selected'))
+        s.classList.add('is-selected')
+        select(s.dataset.name!, s.dataset.exp!, 'on the bench')
+      })
+    })
+
+    /* mouse parallax tilt */
+    const field = section.querySelector('.js-field') as HTMLElement
+    section.addEventListener('mousemove', (e) => {
+      const r = section.getBoundingClientRect()
+      const rx = (e.clientY - r.top) / r.height - 0.5
+      const ry = (e.clientX - r.left) / r.width - 0.5
+      gsap.to(field, { rotateX: -rx * 5, rotateY: ry * 5, duration: 0.6, ease: 'power2.out' })
+    })
+    section.addEventListener('mouseleave', () => {
+      gsap.to(field, { rotateX: 0, rotateY: 0, duration: 0.8, ease: 'power2.out' })
+    })
+
+    /* snow — confined to this section */
+    const canvas = section.querySelector('.js-pitch-snow') as HTMLCanvasElement
+    const ctx = canvas.getContext('2d')!
+    let w = 0
+    let h = 0
+    let flakes: any[] = []
+    let t = 0
+    const resize = () => {
+      const r = section.getBoundingClientRect()
+      w = canvas.width = section.clientWidth
+      h = canvas.height = section.clientHeight
+      const count = Math.min(120, Math.floor(w / 14))
+      flakes = []
+      for (let i = 0; i < count; i++) {
+        flakes.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 2.2 + 0.6,
+          s: Math.random() * 0.7 + 0.3,
+          d: Math.random() * 6.28,
+          sway: Math.random() * 0.6 + 0.2,
+          o: Math.random() * 0.4 + 0.45,
+        })
+      }
+    }
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h)
+      t += 0.008
+      for (const f of flakes) {
+        ctx.beginPath()
+        ctx.fillStyle = `rgba(255,246,242,${f.o})`
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2)
+        ctx.fill()
+        f.y += f.s * 1.2
+        f.x += Math.sin(t + f.d) * f.sway
+        if (f.y > h + 6) {
+          f.y = -6
+          f.x = Math.random() * w
+        }
+      }
+      requestAnimationFrame(draw)
+    }
+    resize()
+    requestAnimationFrame(draw)
+    window.addEventListener('resize', () => setTimeout(resize, 250))
+  }
+</script>
+
+<style lang="scss">
+  .s-pitch {
+    position: relative;
+    z-index: 2;
+
+    padding: 7rem 1.5rem 8rem;
+
+    background: color(primary);
+    color: color(secondary);
+
+    overflow: hidden;
+
+    @include mq(phone) {
+      padding: 4rem 1rem 5rem;
+    }
+
+    &:before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+
+      width: 100%;
+      height: 1px;
+
+      background: color(secondary);
+
+      content: '';
+    }
+
+    .s__snow {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 6;
+
+      width: 100%;
+      height: 100%;
+
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .s__head {
+      position: relative;
+      z-index: 3;
+
+      max-width: 60rem;
+      margin: 0 auto 2.5rem;
+
+      text-align: center;
+    }
+
+    .s__tag {
+      font: 700 0.8125rem / 1 font-family(fraktion);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+
+      margin-bottom: 1.25rem;
+    }
+
+    .s__title {
+      margin: 0;
+
+      font: 700 min(13vw, 11rem) / 0.9 font-family(bigger);
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+    }
+
+    .s__readout {
+      @include flex(row, center, center);
+
+      flex-wrap: wrap;
+      gap: 0.5rem 1.25rem;
+      min-height: 3.5rem;
+      margin: 1.5rem auto 0;
+      padding: 0.85rem 1.5rem;
+
+      border: 1.5px solid color(secondary);
+      border-radius: 999rem;
+
+      &__hint {
+        font: 200 1.0625rem / 1.4 font-family(editorial);
+      }
+
+      &__name {
+        font: 700 1.5rem / 1 font-family(bigger);
+        text-transform: uppercase;
+      }
+
+      &__exp {
+        padding: 0.3rem 0.8rem;
+
+        background: color(secondary);
+
+        color: color(primary);
+        font: 700 0.875rem / 1 font-family(fraktion);
+        letter-spacing: 0.05em;
+      }
+
+      &__note {
+        font: 200 1.0625rem / 1.4 font-family(editorial);
+        font-style: italic;
+      }
+    }
+
+    .s__field-wrap {
+      position: relative;
+      z-index: 1;
+
+      max-width: 76rem;
+      margin: 0 auto;
+
+      perspective: 1400px;
+    }
+
+    .s__field {
+      position: relative;
+
+      width: 100%;
+      aspect-ratio: 1050 / 680;
+
+      border: 2px solid color(secondary);
+      border-radius: 0.25rem;
+      overflow: hidden;
+
+      transform-style: preserve-3d;
+      will-change: transform;
+
+      box-shadow: 0 2.5rem 5rem rgba(20, 0, 0, 0.35);
+    }
+
+    .s__field__turf {
+      position: absolute;
+      inset: 0;
+
+      background: repeating-linear-gradient(
+        90deg,
+        #0f7a36 0,
+        #0f7a36 8.3333%,
+        #0c6c2f 8.3333%,
+        #0c6c2f 16.6666%
+      );
+    }
+
+    .s__field__lines {
+      position: absolute;
+      inset: 0;
+
+      width: 100%;
+      height: 100%;
+    }
+
+    .s__players {
+      position: absolute;
+      inset: 0;
+    }
+
+    .s__player {
+      position: absolute;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+
+      padding: 0;
+
+      appearance: none;
+      background: none;
+      border: 0;
+      cursor: pointer;
+
+      transform: translate3d(-50%, -50%, 0);
+
+      text-align: center;
+
+      &__badge {
+        position: relative;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 2.4rem;
+        height: 2.4rem;
+
+        background: #0d1a12;
+        border: 2px solid #fff6f2;
+        border-radius: 999rem;
+
+        transition: transform 0.4s ease(out-quint), background 0.3s ease;
+
+        @include mq(phone) {
+          width: 1.6rem;
+          height: 1.6rem;
+        }
+      }
+
+      &__num {
+        color: #fff6f2;
+        font: 700 1rem / 1 font-family(bigger);
+
+        @include mq(phone) {
+          font-size: 0.75rem;
+        }
+      }
+
+      &__name {
+        padding: 0.12rem 0.45rem;
+
+        background: #0d1a12;
+
+        color: #fff6f2;
+        font: 700 0.625rem / 1 font-family(fraktion);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+
+        @include mq(phone) {
+          font-size: 0.4rem;
+          padding: 0.08rem 0.25rem;
+        }
+      }
+
+      &:hover .s__player__badge,
+      &.is-selected .s__player__badge {
+        background: #0f7a36;
+        transform: scale(1.22);
+      }
+
+      &.is-selected .s__player__name {
+        background: #0f7a36;
+      }
+    }
+
+    .s__ball {
+      position: absolute;
+      z-index: 5;
+
+      width: 1.3rem;
+      height: 1.3rem;
+
+      background: radial-gradient(circle at 35% 30%, #fff 0 38%, #e9e4df 39% 60%, #cfc8c1 61%);
+      border: 1.5px solid rgba(8, 18, 12, 0.6);
+      border-radius: 999rem;
+
+      transform: translate3d(-50%, -50%, 0);
+      will-change: left, top, transform;
+
+      box-shadow: 0 0.4rem 0.9rem rgba(0, 0, 0, 0.4);
+
+      pointer-events: none;
+
+      @include mq(phone) {
+        width: 0.9rem;
+        height: 0.9rem;
+      }
+    }
+
+    .s__bench {
+      position: relative;
+      z-index: 3;
+
+      max-width: 76rem;
+      margin: 3.5rem auto 0;
+    }
+
+    .s__bench__tag {
+      font: 700 0.75rem / 1 font-family(fraktion);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+
+      margin-bottom: 1.25rem;
+    }
+
+    .s__pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .s__pill {
+      padding: 0.55rem 1rem;
+
+      appearance: none;
+      background: none;
+      border: 1.5px solid color(secondary);
+      border-radius: 999rem;
+      cursor: pointer;
+
+      color: color(secondary);
+      font: 700 0.8125rem / 1 font-family(fraktion);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+
+      transition: background 0.3s ease, color 0.3s ease;
+
+      &:hover,
+      &.is-selected {
+        background: color(secondary);
+        color: color(primary);
+      }
+    }
+  }
+</style>
