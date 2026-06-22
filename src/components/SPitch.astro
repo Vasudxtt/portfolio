@@ -38,7 +38,7 @@ const bench = [
 
   <div class="s__head">
     <div class="s__tag">// The squad — 16 starters, tap to scout</div>
-    <h2 class="s__title">The Pitch</h2>
+    <h2 class="s__title">The Stack</h2>
     <div class="s__readout js-readout">
       <span class="s__readout__hint">Tap any player or sub to reveal the years behind it.</span>
     </div>
@@ -94,6 +94,8 @@ const bench = [
     </div>
   </div>
 
+  <div class="s__tip js-tip" aria-hidden="true"></div>
+
   <div class="s__bench">
     <div class="s__bench__tag">// On the bench — tap for years</div>
     <div class="s__pills">
@@ -104,6 +106,19 @@ const bench = [
           </button>
         ))
       }
+    </div>
+  </div>
+
+  <div class="s__note">
+    <span class="s__note__k">// Manager's note</span>
+    <p>
+      Built around a <b>MERN spine</b> — React &amp; Next up top, Node · Express · Mongo in the
+      engine room, WordPress &amp; PHP for live client fixtures. Every player ships end-to-end.
+    </p>
+    <div class="s__note__stats">
+      <span><b>16</b> starters</span>
+      <span><b>4-3-3</b> formation</span>
+      <span><b>1</b> goal — ship it</span>
     </div>
   </div>
 </section>
@@ -157,12 +172,34 @@ const bench = [
         (note ? `<span class="s__readout__note">${note}</span>` : '')
       readout.classList.add('is-filled')
     }
+
+    /* floating tooltip — appears right where you tap, so no scrolling up */
+    const tip = section.querySelector('.js-tip') as HTMLElement
+    let tipTimer: any = null
+    const showTip = (el: HTMLElement, name: string, exp: string, note?: string) => {
+      const r = el.getBoundingClientRect()
+      tip.innerHTML =
+        `<span class="s__tip__name">${name}</span>` +
+        `<span class="s__tip__exp">${exp}</span>` +
+        (note ? `<span class="s__tip__note">${note}</span>` : '')
+      // clamp horizontally so it never spills off-screen
+      const x = Math.max(70, Math.min(window.innerWidth - 70, r.left + r.width / 2))
+      tip.style.left = x + 'px'
+      tip.style.top = r.top + 'px'
+      tip.classList.add('is-on')
+      clearTimeout(tipTimer)
+      tipTimer = setTimeout(() => tip.classList.remove('is-on'), 2800)
+    }
+    // tooltip vanishes as soon as you scroll
+    window.addEventListener('scroll', () => tip.classList.remove('is-on'), { passive: true })
+
     players.forEach((p) => {
       p.addEventListener('click', () => {
         players.forEach((o) => o.classList.remove('is-selected'))
         subs.forEach((o) => o.classList.remove('is-selected'))
         p.classList.add('is-selected')
         select(p.dataset.name!, p.dataset.exp!, p.dataset.note)
+        showTip(p, p.dataset.name!, p.dataset.exp!, p.dataset.note)
       })
     })
     subs.forEach((s) => {
@@ -171,6 +208,7 @@ const bench = [
         subs.forEach((o) => o.classList.remove('is-selected'))
         s.classList.add('is-selected')
         select(s.dataset.name!, s.dataset.exp!, 'on the bench')
+        showTip(s, s.dataset.name!, s.dataset.exp!, 'on the bench')
       })
     })
 
@@ -318,26 +356,92 @@ const bench = [
       &__hint {
         font: 200 1.0625rem / 1.4 font-family(editorial);
       }
+    }
 
-      &__name {
-        font: 700 1.5rem / 1 font-family(bigger);
-        text-transform: uppercase;
+    /* readout content is injected via JS → must be :global (Astro's scope can't reach runtime DOM) */
+    :global(.s__readout__name) {
+      color: color(secondary);
+      font: 700 1.5rem / 1 font-family(bigger);
+      text-transform: uppercase;
+    }
+
+    :global(.s__readout__exp) {
+      padding: 0.3rem 0.8rem;
+      background: color(secondary);
+      color: color(primary);
+      font: 700 0.875rem / 1 font-family(fraktion);
+      letter-spacing: 0.05em;
+    }
+
+    :global(.s__readout__note) {
+      color: color(secondary);
+      font: 200 1.0625rem / 1.4 font-family(editorial);
+      font-style: italic;
+    }
+
+    .s__tip {
+      position: fixed;
+      z-index: 80;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+
+      padding: 0.5rem 0.9rem;
+
+      background: #0d1a12;
+      border: 1px solid #fff6f2;
+
+      transform: translate(-50%, -118%) scale(0.9);
+      transform-origin: 50% 120%;
+      opacity: 0;
+      pointer-events: none;
+      white-space: nowrap;
+
+      transition: opacity 0.25s ease, transform 0.25s ease(out-quint);
+
+      &.is-on {
+        opacity: 1;
+        transform: translate(-50%, -118%) scale(1);
       }
 
-      &__exp {
-        padding: 0.3rem 0.8rem;
+      &:after {
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
 
-        background: color(secondary);
+        width: 8px;
+        height: 8px;
 
-        color: color(primary);
-        font: 700 0.875rem / 1 font-family(fraktion);
-        letter-spacing: 0.05em;
+        background: #0d1a12;
+        border-right: 1px solid #fff6f2;
+        border-bottom: 1px solid #fff6f2;
+        transform: translateX(-50%) rotate(45deg);
+
+        content: '';
       }
 
-      &__note {
-        font: 200 1.0625rem / 1.4 font-family(editorial);
-        font-style: italic;
-      }
+    }
+
+    /* tooltip content is injected via JS → must be :global */
+    :global(.s__tip__name) {
+      color: #fff6f2;
+      font: 700 0.95rem / 1 font-family(bigger);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    :global(.s__tip__exp) {
+      color: #5fd07a;
+      font: 700 0.7rem / 1 font-family(fraktion);
+      letter-spacing: 0.08em;
+    }
+
+    :global(.s__tip__note) {
+      color: rgba(255, 246, 242, 0.6);
+      font: 400 0.7rem / 1.2 font-family(editorial);
+      font-style: italic;
     }
 
     .s__field-wrap {
@@ -536,6 +640,57 @@ const bench = [
       &.is-selected {
         background: color(secondary);
         color: color(primary);
+      }
+    }
+
+    /* manager's note — fills the lower space on desktop, hidden on phone */
+    .s__note {
+      max-width: 52rem;
+      margin: 3.5rem auto 0;
+
+      text-align: center;
+      color: color(secondary);
+
+      @include mq(phone) {
+        display: none;
+      }
+
+      &__k {
+        display: block;
+        margin-bottom: 0.9rem;
+
+        font: 700 0.75rem / 1 font-family(fraktion);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+
+      p {
+        margin: 0;
+        font: 200 1.5rem / 1.45 font-family(editorial);
+
+        b {
+          font-weight: 400;
+          border-bottom: 2px solid color(secondary);
+        }
+      }
+
+      &__stats {
+        @include flex(row, center, center);
+        gap: 2.5rem;
+        margin-top: 1.75rem;
+
+        span {
+          font: 700 0.8125rem / 1 font-family(fraktion);
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+        }
+
+        b {
+          font-family: font-family(bigger);
+          font-size: 1.75rem;
+          letter-spacing: 0;
+        }
       }
     }
   }

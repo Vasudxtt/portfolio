@@ -28,9 +28,37 @@
           React, Node.js, MongoDB, WordPress, PHP — zero to deployed, obsessing over
           every pixel and every millisecond.
         </p>
+
+        <div class="s__caps">
+          <div class="s__cap">
+            <span class="s__cap__k">Frontend</span>
+            <span class="s__cap__v">React · Next.js · TypeScript · Tailwind · Three.js</span>
+          </div>
+          <div class="s__cap">
+            <span class="s__cap__k">Backend</span>
+            <span class="s__cap__v">Node · Express · REST APIs · MongoDB · MySQL</span>
+          </div>
+          <div class="s__cap">
+            <span class="s__cap__k">Client &amp; CMS</span>
+            <span class="s__cap__v">WordPress · PHP · Shopify · SEO &amp; performance</span>
+          </div>
+        </div>
       </div><!-- .s__content -->
     </div><!-- .s__block -->
   </div><!-- .s__inner -->
+
+  <div class="s__edge s__edge--l" aria-hidden="true">
+    <div class="s__edge__track">
+      <span>Full-Stack&nbsp;✦&nbsp;Creative&nbsp;Developer&nbsp;✦&nbsp;MERN&nbsp;✦&nbsp;Problem&nbsp;Solver&nbsp;✦&nbsp;Full-Stack&nbsp;✦&nbsp;Creative&nbsp;Developer&nbsp;✦&nbsp;MERN&nbsp;✦&nbsp;Problem&nbsp;Solver&nbsp;✦&nbsp;</span>
+      <span>Full-Stack&nbsp;✦&nbsp;Creative&nbsp;Developer&nbsp;✦&nbsp;MERN&nbsp;✦&nbsp;Problem&nbsp;Solver&nbsp;✦&nbsp;Full-Stack&nbsp;✦&nbsp;Creative&nbsp;Developer&nbsp;✦&nbsp;MERN&nbsp;✦&nbsp;Problem&nbsp;Solver&nbsp;✦&nbsp;</span>
+    </div>
+  </div>
+  <div class="s__edge s__edge--r" aria-hidden="true">
+    <div class="s__edge__track">
+      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
+      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
+    </div>
+  </div>
 
   <svg class="s__grid js-grid">
     <path class="js-path" d=""></path>
@@ -291,8 +319,8 @@
       const innerY =
         (bounding.height - bounding.innerHeight) / 2 + bounding.offsetY
 
-      const vLines = window.safeWidth > 767 ? 12 : 8
-      const hLines = 4
+      const vLines = window.safeWidth > 767 ? 12 : 10
+      const hLines = window.safeWidth > 767 ? 4 : 5
 
       const outerGapX = bounding.width / vLines
       const outerGapY = bounding.height / vLines
@@ -538,6 +566,8 @@
         (window.safeWidth > 767 ? 400 : 200) * (this.scroll.sp * 2 - 1)
 
       el.style.setProperty('--offset-y', `${this.bounding.offsetY}px`)
+      // depth zoom — background grid pushes into the scene as you read down
+      el.style.setProperty('--zoom', String(this.scroll.sp))
 
       // Lines
       if (sd !== 0 || this.isForced) {
@@ -640,23 +670,23 @@
 
 <style lang="scss">
   .s-about {
-    --width: 39.25rem;
+    --width: 44rem;
 
     position: relative;
     z-index: 3;
 
-    padding: 15rem 0;
+    padding: 9rem 0;
 
     overflow: hidden;
 
     @include mq(desktop-xs) {
-      --width: 32rem;
+      --width: 36rem;
     }
 
     @include mq(tablet-sm) {
-      --width: 70vw;
+      --width: 78vw;
 
-      padding: 7.5rem 0;
+      padding: 5rem 0;
     }
 
     @include mq(phone) {
@@ -720,7 +750,53 @@
       }
 
       @include mq(phone) {
-        padding: 15vw 10vw;
+        padding: 12vw 9vw;
+      }
+
+      .s__caps {
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid color(secondary);
+
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+      }
+
+      .s__cap {
+        @include flex(row, baseline, flex-start);
+        gap: 1rem;
+
+        @include mq(phone) {
+          flex-direction: column;
+          gap: 0.15rem;
+        }
+      }
+
+      .s__cap__k {
+        flex: 0 0 8rem;
+
+        font: 700 0.8125rem / 1.4 font-family(fraktion);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+
+        @include mq(phone) {
+          flex: none;
+        }
+      }
+
+      .s__cap__v {
+        flex: 1;
+        font: 200 1.15rem / 1.4 font-family(editorial);
+
+        @include mq(desktop-xs) {
+          font-size: 1.05rem;
+        }
+
+        @include mq(phone) {
+          font-size: 1rem;
+          opacity: 0.85;
+        }
       }
 
       a {
@@ -1159,6 +1235,75 @@
       }
     }
 
+    .s__edge {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      z-index: 2;
+
+      overflow: hidden;
+      pointer-events: none;
+
+      // soft fade at the top/bottom so the scrolling text dissolves into the bg
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 12%,
+        #000 88%,
+        transparent
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 12%,
+        #000 88%,
+        transparent
+      );
+
+      @include mq(tablet) {
+        display: none;
+      }
+
+      &--l {
+        left: 2rem;
+      }
+
+      &--r {
+        right: 2rem;
+      }
+
+      &__track {
+        display: flex;
+        flex-direction: column;
+        animation: about-edge-scroll 34s linear infinite;
+      }
+
+      &--r &__track {
+        animation-duration: 42s;
+        animation-direction: reverse;
+      }
+
+      span {
+        writing-mode: vertical-rl;
+        white-space: nowrap;
+
+        font: 700 0.8125rem / 1 font-family(fraktion);
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: color(secondary);
+        opacity: 0.42;
+      }
+    }
+
+    @keyframes about-edge-scroll {
+      from {
+        transform: translateY(0);
+      }
+      to {
+        transform: translateY(-50%);
+      }
+    }
+
     .s__grid {
       position: absolute;
       top: 0;
@@ -1169,6 +1314,10 @@
       height: 100%;
 
       pointer-events: none;
+
+      transform: scale(calc(1 + var(--zoom, 0) * 0.5));
+      transform-origin: 50% 42%;
+      will-change: transform;
 
       path {
         fill: none;

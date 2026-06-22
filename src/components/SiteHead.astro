@@ -138,6 +138,11 @@ const menu = [
 
         <button class="sb-palette__reset js-sw-reset" type="button">↺ Back to crimson</button>
       </div>
+
+      <div class="sb-coach js-coach" aria-hidden="true">
+        <span class="sb-coach__star">✦</span>
+        Tap to repaint the whole site
+      </div>
     </div><!-- .sb-theme -->
 
     <aside class="sb-availability">
@@ -177,6 +182,8 @@ const menu = [
     console: HTMLElement
     contrastMask: HTMLElement
     links: NodeListOf<HTMLElement>
+    basePrimary: string
+    coachShown: boolean
 
     messages: string[]
     message: string
@@ -240,6 +247,14 @@ const menu = [
     init() {
       this.restoreColor()
       this.bindEvents()
+
+      // scroll-driven colour fade — the site gently lightens/darkens toward the footer
+      if (!this.basePrimary) this.basePrimary = this.currentPrimary()
+      this.applyShade()
+      Emitter.on('scroll', this.applyShade, this)
+
+      // coach fallback — fires even if the 'intro' event is missed
+      setTimeout(() => this.maybeShowCoach(), 6500)
     }
 
     /**
@@ -250,6 +265,7 @@ const menu = [
         e.stopPropagation()
         const open = this.palette.classList.toggle('is-open')
         this.palette.setAttribute('aria-hidden', String(!open))
+        this.dismissCoach()
       })
 
       const nameEl = this.palette.querySelector('.js-sw-name')
@@ -366,6 +382,44 @@ const menu = [
         null,
         1.5
       )
+
+      // onboarding coach — nudge first-time visitors to try the colour picker
+      this.maybeShowCoach()
+    }
+
+    /**
+     * Show the onboarding coach (once, until they engage the picker)
+     */
+    maybeShowCoach() {
+      if (this.coachShown) return
+
+      const coach = this.el.querySelector('.js-coach')
+      const theme = this.el.querySelector('.sb-theme')
+      if (!coach) return
+
+      this.coachShown = true
+      setTimeout(() => {
+        coach.classList.add('is-on')
+        if (theme) theme.classList.add('is-hinting')
+      }, 1100)
+      setTimeout(() => this.dismissCoach(), 15000)
+
+      // vanish on the first scroll
+      const onScroll = () => {
+        this.dismissCoach()
+        window.removeEventListener('scroll', onScroll)
+      }
+      setTimeout(() => window.addEventListener('scroll', onScroll, { passive: true }), 1600)
+    }
+
+    /**
+     * Dismiss the onboarding coach
+     */
+    dismissCoach() {
+      const coach = this.el.querySelector('.js-coach')
+      const theme = this.el.querySelector('.sb-theme')
+      if (coach) coach.classList.remove('is-on')
+      if (theme) theme.classList.remove('is-hinting')
     }
 
     /**
@@ -403,12 +457,19 @@ const menu = [
       const nameEl = this.palette.querySelector('.js-sw-name')
       if (nameEl) nameEl.textContent = matched || 'Custom blend'
 
+      this.basePrimary = hex
+
       try {
         localStorage.setItem('vp-color', hex)
+        localStorage.setItem('vp-coach', 'done')
       } catch (e) {}
+      this.dismissCoach()
 
       Emitter.emit('contrastchange', 'custom')
       window.dispatchEvent(new CustomEvent('vp-recolor', { detail: hex }))
+
+      // re-apply the scroll fade from the new base colour
+      this.applyShade()
     }
 
     hslToHex(h, s, l) {
@@ -421,6 +482,47 @@ const menu = [
         return Math.round(255 * c).toString(16).padStart(2, '0')
       }
       return '#' + f(0) + f(8) + f(4)
+    }
+
+    rgbToHsl(r, g, b) {
+      r /= 255
+      g /= 255
+      b /= 255
+      const max = Math.max(r, g, b)
+      const min = Math.min(r, g, b)
+      let h = 0
+      let s = 0
+      const l = (max + min) / 2
+      if (max !== min) {
+        const d = max - min
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+        if (max === r) h = (g - b) / d + (g < b ? 6 : 0)
+        else if (max === g) h = (b - r) / d + 2
+        else h = (r - g) / d + 4
+        h /= 6
+      }
+      return [h * 360, s * 100, l * 100]
+    }
+
+    currentPrimary() {
+      const inline = document.documentElement.style.getPropertyValue('--color-primary').trim()
+      if (inline) return inline
+      const computed = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-primary')
+        .trim()
+      return computed || '#f40c3f'
+    }
+
+    applyShade() {
+      if (!this.basePrimary) return
+      const p = Math.min(Math.max(window.scrollProgress || 0, 0), 1)
+      const rgb = this.hexToRgb(this.basePrimary)
+      const dark = this.luminance(rgb) < 0.45
+      const [h, s, l0] = this.rgbToHsl(rgb[0], rgb[1], rgb[2])
+      // gently lighten a dark theme (or darken a light one) toward the bottom — kept subtle
+      // so it never collapses contrast against the (fixed) text colour
+      const l = Math.min(90, Math.max(10, l0 + (dark ? 1 : -1) * p * 9))
+      document.documentElement.style.setProperty('--color-primary', this.hslToHex(h, s, l))
     }
 
     /**
@@ -848,8 +950,17 @@ const menu = [
         width: 48px;
         height: 48px;
 
+        @include mq(tablet-sm) {
+          width: 42px;
+        }
+
         @include mq(phone) {
+          width: 38px;
           height: 100%;
+        }
+
+        @include mq(phone-sm) {
+          width: 34px;
         }
 
         &:before {
@@ -973,6 +1084,94 @@ const menu = [
 
       @include mq(tablet) {
         order: 5;
+      }
+    }
+
+    .sb-coach {
+      position: absolute;
+      top: calc(100% + 0.7rem);
+      right: 0;
+      z-index: 45;
+
+      @include flex(row, center, center);
+      gap: 0.45rem;
+
+      padding: 0.6rem 0.85rem;
+      white-space: nowrap;
+
+      background: color(secondary);
+      color: color(primary);
+      font: 700 0.6875rem / 1 font-family(fraktion);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-6px);
+      transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s;
+      pointer-events: none;
+
+      @include mq(phone) {
+        font-size: 0.5625rem;
+        padding: 0.5rem 0.65rem;
+      }
+
+      &.is-on {
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        animation: sb-coach-bob 1.8s ease(in-out-quint) infinite;
+      }
+
+      &__star {
+        animation: sb-coach-spin 3s linear infinite;
+      }
+
+      &:after {
+        position: absolute;
+        top: -4px;
+        right: 1.1rem;
+
+        width: 8px;
+        height: 8px;
+
+        background: color(secondary);
+        transform: rotate(45deg);
+
+        content: '';
+      }
+    }
+
+    @keyframes sb-coach-bob {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-4px);
+      }
+    }
+
+    @keyframes sb-coach-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* pulse ring on the theme button while the coach is active */
+    .sb-theme.is-hinting .sb-contrast:before {
+      animation: sb-hint-pulse 1.6s ease(out-quint) infinite;
+    }
+
+    @keyframes sb-hint-pulse {
+      0% {
+        scale: 0 1;
+        opacity: 1;
+      }
+      70%,
+      100% {
+        scale: 1 1;
+        opacity: 0;
       }
     }
 
@@ -1234,6 +1433,22 @@ const menu = [
         background: none;
         border-left: 1px solid color(secondary);
         order: 3;
+
+        font-size: 1rem;
+
+        // the first line ("Full Stack Developer — Mumbai") is text-only and hidden
+        // on phone, so drop the now-empty line and just show the Hire-me CTA
+        .sb__line:first-child {
+          display: none;
+        }
+
+        .sb__line {
+          padding: 0 0.8rem;
+        }
+
+        a {
+          white-space: nowrap;
+        }
       }
 
       p {
@@ -1296,7 +1511,8 @@ const menu = [
 
       border-left: 1px solid color(secondary);
 
-      @include mq(desktop-sm) {
+      // QR is a "scan me" affordance — useful on desktop, pointless/cramped on phone
+      @include mq(tablet) {
         display: none;
       }
 
