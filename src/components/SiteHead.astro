@@ -694,8 +694,10 @@ const menu = [
     }
 
     .sb-logo {
-      padding: 1.5rem;
-      width: 6rem;
+      @include flex(row, center, center);
+
+      // auto-width box that hugs the wordmark (was a cramped fixed 6rem square)
+      padding: 0 1.85rem;
       height: 6rem;
 
       border-right: 1px solid color(secondary);
@@ -705,41 +707,24 @@ const menu = [
       }
 
       @include mq(phone) {
-        padding: 1rem;
-        width: 4rem;
+        padding: 0 1.15rem;
         height: 4rem;
       }
 
-      svg {
-        width: 3rem;
-        height: 3rem;
-
-        @include mq(phone) {
-          width: 1.875rem;
-          height: 1.875rem;
-        }
-      }
-
       a {
+        @include flex(row, center, center);
+
         text-decoration: none;
       }
 
       .sb-logo__text {
-        @include flex(row, center, center);
-
-        width: 3rem;
-        height: 3rem;
-
         color: color(secondary);
-        font: 700 1.6rem / 1 font-family(bigger);
-        letter-spacing: -0.06em;
+        font: 700 2.15rem / 1 font-family(bigger);
+        letter-spacing: 0.04em;
         text-decoration: none;
 
         @include mq(phone) {
-          width: 1.875rem;
-          height: 1.875rem;
-
-          font-size: 1.05rem;
+          font-size: 1.55rem;
         }
       }
     }
@@ -754,11 +739,8 @@ const menu = [
       text-transform: uppercase;
       white-space: pre-line;
 
+      // the 8px message ticker reads as an empty box on small screens — desktop only
       @include mq(tablet) {
-        order: 2;
-      }
-
-      @include mq(tablet-sm) {
         display: none;
       }
 
