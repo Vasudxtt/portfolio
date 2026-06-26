@@ -148,12 +148,10 @@ const menu = [
     <aside class="sb-availability">
       <p>
         <span class="sb__line">
-          <span class="sb__text">Full Stack Developer — Mumbai, India.</span>
+          <span class="sb__text">Open to work — Mumbai, India.</span>
         </span>
 
         <span class="sb__line">
-          <span class="sb__text">Available for freelance work →</span>
-
           <a href="mailto:vasuduttpareek@gmail.com" class="sb__link js-contact-trigger">Hire me</a>
           <span class="sb__sep" aria-hidden="true">·</span>
           <a
@@ -1464,27 +1462,19 @@ const menu = [
         border-left: 1px solid color(secondary);
         order: 3;
 
-        font-size: 1rem;
+        font-size: 0.9rem;
 
         // the first line ("Full Stack Developer — Mumbai") is text-only and hidden
-        // on phone, so drop the now-empty line and just show the Hire-me CTA
+        // on phone, so drop the now-empty line and just show the CTA stack
         .sb__line:first-child {
           display: none;
         }
 
-        .sb__line {
-          padding: 0 0.8rem;
-        }
-
-        // Hire me + Résumé stack on phone — the inline dot separator would float, hide it
+        // the inline dot separator is replaced by the divider line between rows
+        // (the stack + divider live on the base .sb__line / a rules below so they
+        // win the source-order cascade on phone)
         .sb__sep {
           display: none;
-        }
-
-        a {
-          display: block;
-          white-space: nowrap;
-          text-align: center;
         }
       }
 
@@ -1495,6 +1485,14 @@ const menu = [
       .sb__line {
         display: block;
         padding: 1px 1.25rem 0;
+
+        // on phone the CTA line becomes a tidy two-row stack (Hire me / Résumé)
+        @include mq(phone) {
+          @include flex(column, center, stretch);
+
+          width: 100%;
+          padding: 0;
+        }
       }
 
       .sb__text {
@@ -1510,6 +1508,14 @@ const menu = [
 
       .sb__link--cv {
         font-weight: 400;
+
+        // phone: the hairline divider that separates Hire me / Résumé
+        @include mq(phone) {
+          border-top: 1px solid color(secondary);
+
+          font-size: 0.8rem;
+          opacity: 0.85;
+        }
 
         &:after {
           content: '';
@@ -1536,6 +1542,16 @@ const menu = [
         color: color(secondary);
         font-weight: 400;
         text-decoration: none;
+
+        // phone: each CTA is a centered full-width row in the stack
+        @include mq(phone) {
+          @include flex(row, center, center);
+
+          padding: 0.4rem 1.1rem;
+
+          line-height: 1.15;
+          white-space: nowrap;
+        }
 
         &:before {
           position: absolute;
