@@ -60,6 +60,8 @@
     </div>
   </div>
 
+  <canvas class="s__ambient js-ambient" aria-hidden="true"></canvas>
+
   <svg class="s__grid js-grid">
     <path class="js-path" d=""></path>
   </svg>
@@ -78,6 +80,10 @@
     path: HTMLElement
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
+    ambient: HTMLCanvasElement
+    actx: CanvasRenderingContext2D
+    motes: any[]
+    ink: string
     awards: NodeListOf<HTMLElement>
 
     smileyImages: {
@@ -119,11 +125,17 @@
       this.path = this.el.querySelector('.js-path')
       ;(this.canvas = document.querySelector('.js-canvas')),
         (this.ctx = this.canvas.getContext('2d'))
+      this.ambient = this.el.querySelector('.js-ambient')
+      this.actx = this.ambient.getContext('2d')
       this.awards = this.el.querySelectorAll('.js-award')
 
       // Properties
       this.lines = []
       this.smileys = []
+      this.motes = []
+      this.ink = '20,0,0'
+      this.readInk()
+      window.addEventListener('vp-recolor', () => this.readInk())
 
       this.isPaused = true
       this.isForced = false
@@ -286,6 +298,10 @@
 
       canvas.width = this.bounding.width
       canvas.height = this.bounding.height
+
+      this.ambient.width = this.bounding.width
+      this.ambient.height = this.bounding.height
+      this.seedMotes()
     }
 
     /**
@@ -553,6 +569,94 @@
     }
 
     /**
+     * Read the theme's ink colour so the ambient layer stays visible in any palette
+     */
+    readInk() {
+      const c = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-secondary')
+        .trim()
+      const hex = c.replace('#', '')
+      if (/^[0-9a-f]{3}$/i.test(hex)) {
+        const f = hex.split('').map((x) => x + x).join('')
+        const n = parseInt(f, 16)
+        this.ink = `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`
+      } else if (/^[0-9a-f]{6}$/i.test(hex)) {
+        const n = parseInt(hex, 16)
+        this.ink = `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`
+      } else {
+        const m = c.match(/\d+/g)
+        if (m) this.ink = m.slice(0, 3).join(',')
+      }
+    }
+
+    /**
+     * Seed the drifting ambient field (small motes + a few ✦ sparks)
+     */
+    seedMotes() {
+      const { width, height } = this.bounding
+      const count = Math.round((width * height) / 10000)
+      this.motes = []
+      for (let i = 0; i < count; i++) {
+        const star = Math.random() < 0.2
+        this.motes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: star ? Math.random() * 6 + 4 : Math.random() * 1.6 + 0.6,
+          star,
+          a: star ? Math.random() * 0.14 + 0.1 : Math.random() * 0.2 + 0.1,
+          tw: Math.random() * Math.PI * 2,
+          tws: Math.random() * 0.03 + 0.008,
+          vx: (Math.random() - 0.5) * 0.16,
+          vy: -(Math.random() * 0.12 + 0.03), // drift gently upward
+        })
+      }
+    }
+
+    /**
+     * Draw the ambient background field — fills the section on every screen size
+     */
+    drawAmbient() {
+      const { actx, bounding, motes, ink } = this
+      const { width, height } = bounding
+      actx.clearRect(0, 0, width, height)
+
+      for (let i = 0; i < motes.length; i++) {
+        const m = motes[i]
+        const tw = 0.55 + 0.45 * Math.sin(m.tw)
+        actx.fillStyle = `rgba(${ink},${m.a * tw})`
+
+        if (m.star) {
+          // a small four-point ✦ spark
+          actx.save()
+          actx.translate(m.x, m.y)
+          actx.beginPath()
+          const r = m.r
+          const i2 = r * 0.32
+          actx.moveTo(0, -r)
+          actx.quadraticCurveTo(i2, -i2, r, 0)
+          actx.quadraticCurveTo(i2, i2, 0, r)
+          actx.quadraticCurveTo(-i2, i2, -r, 0)
+          actx.quadraticCurveTo(-i2, -i2, 0, -r)
+          actx.fill()
+          actx.restore()
+        } else {
+          actx.beginPath()
+          actx.arc(m.x, m.y, m.r, 0, Math.PI * 2)
+          actx.fill()
+        }
+
+        if (!this.isPaused) {
+          m.x += m.vx
+          m.y += m.vy
+          m.tw += m.tws
+          if (m.y < -8) m.y = height + 8
+          if (m.x < -8) m.x = width + 8
+          else if (m.x > width + 8) m.x = -8
+        }
+      }
+    }
+
+    /**
      * Tick
      */
     tick() {
@@ -568,6 +672,9 @@
       el.style.setProperty('--offset-y', `${this.bounding.offsetY}px`)
       // depth zoom — background grid pushes into the scene as you read down
       el.style.setProperty('--zoom', String(this.scroll.sp))
+
+      // ambient field — always animating while the section is in view
+      this.drawAmbient()
 
       // Lines
       if (sd !== 0 || this.isForced) {
@@ -1319,6 +1426,18 @@
       to {
         transform: translateY(-50%);
       }
+    }
+
+    .s__ambient {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+
+      width: 100%;
+      height: 100%;
+
+      pointer-events: none;
     }
 
     .s__grid {
