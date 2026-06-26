@@ -184,6 +184,8 @@ const menu = [
     links: NodeListOf<HTMLElement>
     basePrimary: string
     coachShown: boolean
+    coachVisible: boolean
+    coachCooldownUntil: number
 
     messages: string[]
     message: string
@@ -252,6 +254,9 @@ const menu = [
       if (!this.basePrimary) this.basePrimary = this.currentPrimary()
       this.applyShade()
       Emitter.on('scroll', this.applyShade, this)
+
+      // the colour nudge reappears whenever the visitor scrolls back up to the header
+      Emitter.on('scroll', this.updateCoachOnScroll, this)
 
       // coach fallback — fires even if the 'intro' event is missed
       setTimeout(() => this.maybeShowCoach(), 6500)
@@ -388,38 +393,55 @@ const menu = [
     }
 
     /**
-     * Show the onboarding coach (once, until they engage the picker)
+     * Show the onboarding coach the first time (after the intro), then let the
+     * scroll watcher bring it back whenever the visitor returns to the header.
      */
     maybeShowCoach() {
       if (this.coachShown) return
-
-      const coach = this.el.querySelector('.js-coach')
-      const theme = this.el.querySelector('.sb-theme')
-      if (!coach) return
-
       this.coachShown = true
-      setTimeout(() => {
-        coach.classList.add('is-on')
-        if (theme) theme.classList.add('is-hinting')
-      }, 1100)
-      setTimeout(() => this.dismissCoach(), 15000)
-
-      // vanish on the first scroll
-      const onScroll = () => {
-        this.dismissCoach()
-        window.removeEventListener('scroll', onScroll)
-      }
-      setTimeout(() => window.addEventListener('scroll', onScroll, { passive: true }), 1600)
+      setTimeout(() => this.showCoach(), 1100)
     }
 
     /**
-     * Dismiss the onboarding coach
+     * Reveal the colour-picker nudge
+     */
+    showCoach() {
+      const coach = this.el.querySelector('.js-coach')
+      const theme = this.el.querySelector('.sb-theme')
+      if (!coach || this.coachVisible) return
+      // don't pop while the palette is already open
+      if (this.palette && this.palette.classList.contains('is-open')) return
+
+      this.coachVisible = true
+      coach.classList.add('is-on')
+      if (theme) theme.classList.add('is-hinting')
+    }
+
+    /**
+     * Dismiss the onboarding coach (with a short cooldown before it can return)
      */
     dismissCoach() {
       const coach = this.el.querySelector('.js-coach')
       const theme = this.el.querySelector('.sb-theme')
       if (coach) coach.classList.remove('is-on')
       if (theme) theme.classList.remove('is-hinting')
+      this.coachVisible = false
+      this.coachCooldownUntil = Date.now() + 1200
+    }
+
+    /**
+     * Scroll watcher — show the colour nudge near the top, hide it once the
+     * visitor scrolls into the page. Fires on every Emitter 'scroll'.
+     */
+    updateCoachOnScroll() {
+      const atTop = (window.scrollY || window.pageYOffset || 0) < 90
+      if (atTop) {
+        if (!this.coachVisible && this.coachShown && Date.now() > (this.coachCooldownUntil || 0)) {
+          this.showCoach()
+        }
+      } else if (this.coachVisible) {
+        this.dismissCoach()
+      }
     }
 
     /**

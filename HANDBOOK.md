@@ -12,7 +12,7 @@
 - Your honest level: **~1.2 years**, junior full-stack. You ship real things. That's your strength — talk about **what you built and the decisions you made**, not buzzwords.
 
 ### Your 30-second pitch
-> "I'm Vasudutt, a full-stack developer from VIT Vellore, currently building live client products at iTXIT Pro. I work mainly in the MERN stack — React, Node, Express, MongoDB — plus WordPress and PHP for client sites. I like owning a feature end to end: designing the UI, building the API, wiring the database, and shipping it. Recently I've been building AI-powered tools using LLM APIs."
+> "I'm Vasudutt, a full-stack developer from VIT Vellore, currently building live client products at ItXiTPro. I work mainly in the MERN stack — React, Node, Express, MongoDB — plus WordPress and PHP for client sites. I like owning a feature end to end: designing the UI, building the API, wiring the database, and shipping it. Recently I've been building AI-powered tools using LLM APIs."
 
 ---
 
@@ -124,7 +124,7 @@ User clicks → React calls `fetch('/api/users')` → Express route receives it 
 
 ### ⑦ Git
 - **What:** A **version control system** — tracks code changes, lets you branch, merge, and collaborate.
-- **Why you used it:** You managed Git/GitHub workflows at iTXIT Pro — branches, code reviews, on-time delivery.
+- **Why you used it:** You managed Git/GitHub workflows at ItXiTPro — branches, code reviews, on-time delivery.
 - **Must-know basics:**
   - `git add` → `git commit` → `git push`. `git pull` to get others' changes.
   - **Branches:** `git branch`, `git checkout -b feature`, `git merge`. Work on a branch, open a **Pull Request**, review, merge to `main`.
@@ -205,7 +205,7 @@ User clicks → React calls `fetch('/api/users')` → Express route receives it 
 
 ### ⑬ WordPress
 - **What:** The world's most popular **CMS** (content management system), built on PHP + MySQL.
-- **Why you used it:** Real client websites at iTXIT Pro — fast to build, client can edit content themselves.
+- **Why you used it:** Real client websites at ItXiTPro — fast to build, client can edit content themselves.
 - **Must-know basics:**
   - **Themes** (look) + **Plugins** (features). **Posts**, **Pages**, **Custom Post Types**.
   - **The Loop** — PHP that pulls and displays posts.
@@ -337,6 +337,20 @@ User clicks → React calls `fetch('/api/users')` → Express route receives it 
 - **"Why should we hire you?"** → You ship real products end to end, you're a fast learner, and you care about details (UX + performance).
 - **"Where do you see gaps?"** → Be honest: deeper testing, system design at scale, DevOps/CI-CD. Then say how you're learning them.
 - **"Why did you choose X over Y?"** → Always frame as a **trade-off** (speed vs control, cost vs scale). Interviewers love trade-off reasoning.
+
+---
+
+## 6.5 Walking someone through THIS portfolio
+
+Recruiters and technical interviewers will open your site live. Have a 60-second tour ready and know what's under the hood.
+
+- **The pitch (60s):** *"It's a single-page Astro site — static-generated, so it loads instantly and scores high on Core Web Vitals. The scroll experience is GSAP + a custom canvas/animation engine. Everything is themeable: the colour picker repaints the entire site live by swapping CSS custom properties, and the text auto-contrasts using a luminance check so it never breaks readability."*
+- **Things you can defend if asked:**
+  - *"Why Astro?"* → Ships zero JS by default, static output (fast + cheap to host), great Lighthouse scores; I add interactivity only where needed (islands).
+  - *"How does the colour picker not break contrast?"* → I compute relative luminance of the chosen colour and pick dark or light text against it; surfaces that must stay fixed (the green pitch, the globe) read a stored ink colour instead of the theme variable.
+  - *"What's the hardest part?"* → Theme-safety across every possible colour, and keeping 60fps with multiple canvases (I pause off-screen sections with an IntersectionObserver).
+  - *"Accessibility?"* → Semantic landmarks, `prefers-reduced-motion` disables the heavy animation, decorative canvases are `aria-hidden`.
+- **Honesty line:** *"It started from an open-source template (credited in the README under CC-BY-NC), and I rebuilt the content, theming system, the tech-stack 'pitch', the AI chatbot, and the deploy pipeline myself."* — owning this is far stronger than pretending it's 100% from scratch.
 
 ---
 

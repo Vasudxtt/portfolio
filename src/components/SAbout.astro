@@ -20,7 +20,7 @@
         </p>
 
         <p>
-          I'm a Full Stack MERN Developer from VIT Vellore, currently at iTXIT Pro, 
+          I'm a Full Stack MERN Developer from VIT Vellore, currently at ItXiTPro,
           shipping live products for real clients every single day.
         </p>
 
@@ -1260,7 +1260,8 @@
         transparent
       );
 
-      @include mq(tablet) {
+      // hidden only on the smallest phones, where the side margins disappear
+      @include mq(phone) {
         display: none;
       }
 
@@ -1270,6 +1271,17 @@
 
       &--r {
         right: 2rem;
+      }
+
+      // thinner side margins on tablets — tuck the rail closer to the edge
+      @include mq(tablet-sm) {
+        &--l {
+          left: 0.85rem;
+        }
+
+        &--r {
+          right: 0.85rem;
+        }
       }
 
       &__track {
@@ -1291,7 +1303,12 @@
         letter-spacing: 0.28em;
         text-transform: uppercase;
         color: color(secondary);
-        opacity: 0.42;
+        opacity: 0.5;
+
+        @include mq(tablet-sm) {
+          font-size: 0.75rem;
+          letter-spacing: 0.22em;
+        }
       }
     }
 

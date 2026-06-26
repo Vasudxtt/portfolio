@@ -2,6 +2,8 @@
 ---
 
 <section class="s-earth" data-intersect>
+  <canvas class="s__space js-space" aria-hidden="true"></canvas>
+
   <div class="s__tag s__tag--tl">// Re-entry sequence</div>
   <div class="s__tag s__tag--tr">From orbit → Mumbai</div>
 
@@ -55,6 +57,104 @@
     // rocket state
     const rocket = { p: 0, active: true, wait: 0, trail: [] as any[], debris: [] as any[], flash: 0 }
 
+    // ── ambient "space" layer behind the globe ──────────────────────────────
+    const space = section.querySelector('.js-space') as HTMLCanvasElement
+    const sctx = space.getContext('2d')!
+    let SW = 0
+    let SH = 0
+    let stars: any[] = []
+    let orbit = 0 // shared rotation for the orbital rings + satellite
+
+    const seedStars = () => {
+      const count = Math.round((SW * SH) / 14000) // density scales with area
+      stars = []
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * SW,
+          y: Math.random() * SH,
+          r: Math.random() * 1.2 + 0.35,
+          a: Math.random() * 0.22 + 0.06,
+          tw: Math.random() * Math.PI * 2, // twinkle phase
+          tws: Math.random() * 0.04 + 0.01, // twinkle speed
+          vx: (Math.random() - 0.5) * 0.12, // slow drift
+          vy: (Math.random() - 0.5) * 0.12,
+        })
+      }
+    }
+
+    const sizeSpace = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      SW = section.clientWidth
+      SH = section.clientHeight
+      space.width = SW * dpr
+      space.height = SH * dpr
+      space.style.width = SW + 'px'
+      space.style.height = SH + 'px'
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      seedStars()
+    }
+
+    const drawSpace = () => {
+      sctx.clearRect(0, 0, SW, SH)
+      const ox = SW / 2
+      const oy = SH / 2
+
+      // orbital rings — concentric tilted ellipses, the satellite's racetrack
+      const base = Math.min(SW, SH)
+      const rings = [base * 0.34, base * 0.46, base * 0.6]
+      sctx.save()
+      sctx.translate(ox, oy)
+      rings.forEach((rad, i) => {
+        sctx.beginPath()
+        sctx.setLineDash([2, 8])
+        sctx.strokeStyle = `rgba(${INK},${0.16 - i * 0.03})`
+        sctx.lineWidth = 1
+        sctx.ellipse(0, 0, rad, rad * 0.42, orbit * (0.4 + i * 0.12), 0, Math.PI * 2)
+        sctx.stroke()
+      })
+      sctx.setLineDash([])
+
+      // satellite tracing the middle ring
+      const satA = orbit * 1.6
+      const sr = rings[1]
+      const sx = Math.cos(satA) * sr
+      const sy = Math.sin(satA) * sr * 0.42
+      const rotA = orbit * (0.4 + 0.12)
+      const px = sx * Math.cos(rotA) - sy * Math.sin(rotA)
+      const py = sx * Math.sin(rotA) + sy * Math.cos(rotA)
+      sctx.beginPath()
+      sctx.fillStyle = `rgba(${INK},0.85)`
+      sctx.arc(px, py, 2.4, 0, Math.PI * 2)
+      sctx.fill()
+      sctx.beginPath()
+      sctx.strokeStyle = `rgba(${INK},0.25)`
+      sctx.lineWidth = 1
+      sctx.arc(px, py, 6, 0, Math.PI * 2)
+      sctx.stroke()
+      sctx.restore()
+
+      // drifting starfield
+      for (let i = 0; i < stars.length; i++) {
+        const s = stars[i]
+        const tw = 0.6 + 0.4 * Math.sin(s.tw)
+        sctx.beginPath()
+        sctx.fillStyle = `rgba(${INK},${s.a * tw})`
+        sctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        sctx.fill()
+        if (!paused) {
+          s.x += s.vx
+          s.y += s.vy
+          s.tw += s.tws
+          if (s.x < -2) s.x = SW + 2
+          else if (s.x > SW + 2) s.x = -2
+          if (s.y < -2) s.y = SH + 2
+          else if (s.y > SH + 2) s.y = -2
+        }
+      }
+
+      if (!paused) orbit += 0.0016
+    }
+
     const size = () => {
       const wrap = canvas.parentElement as HTMLElement
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -66,6 +166,7 @@
       R = S * 0.4
       cx = S / 2
       cy = S / 2
+      sizeSpace()
     }
 
     const project = (lat: number, lon: number) => {
@@ -190,6 +291,8 @@
     }
 
     const draw = () => {
+      drawSpace()
+
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       // outline
@@ -272,6 +375,18 @@
       background: color(secondary);
 
       content: '';
+    }
+
+    .s__space {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+
+      width: 100%;
+      height: 100%;
+
+      pointer-events: none;
     }
 
     .s__globe {
