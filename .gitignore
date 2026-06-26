@@ -131,3 +131,7 @@ dist
 
 # Astro
 .astro/temp/
+
+# Local-only reference repos (not part of the deployable site).
+# These were committed as bare gitlinks (no .gitmodules) which broke Netlify's checkout.
+temp/
