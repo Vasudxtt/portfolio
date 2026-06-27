@@ -25,6 +25,10 @@ const menu = [
       </a>
     </div><!-- .sb-logo -->
 
+    <div class="sb-console" role="presentation">
+      <div class="sb-console__inner js-console"></div>
+    </div><!-- .sb-console -->
+
     <nav class="sb-menu">
       <ul class="sb__list">
         {
@@ -728,13 +732,34 @@ const menu = [
       }
     }
 
+    .sb-console {
+      @include flex(column, flex-start, flex-end);
+
+      // soaks up the space after the logo (was the empty gap) — the live ticker
+      // makes it read as an efficient terminal, not blank
+      margin: 0 auto 0 0;
+      padding: 1.25rem 2rem;
+
+      font: 400 9px / 1.5 font-family(fraktion);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: pre-line;
+
+      // desktop-only — at this size on a phone it would read as an empty box
+      @include mq(tablet) {
+        display: none;
+      }
+
+      &__inner {
+        @include flex(column, flex-start, flex-end);
+
+        height: 5.4em;
+
+        overflow: hidden;
+      }
+    }
+
     .sb-menu {
-      @include flex(row, center, center);
-
-      // grow into the space the console used to occupy, links centred — fills the
-      // header on desktop instead of leaving an empty gap after the logo
-      flex-grow: 1;
-
       border-left: 1px solid color(secondary);
 
       @include mq(desktop-xs) {
