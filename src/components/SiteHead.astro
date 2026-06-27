@@ -698,8 +698,11 @@ const menu = [
 
       border-right: 1px solid color(secondary);
 
+      // tablet/phone hide the centred nav menu, so let the logo push the remaining
+      // cells flush to the right (no floating void) instead
       @include mq(tablet) {
         order: 1;
+        margin-right: auto;
       }
 
       @include mq(phone) {
@@ -726,6 +729,12 @@ const menu = [
     }
 
     .sb-menu {
+      @include flex(row, center, center);
+
+      // grow into the space the console used to occupy, links centred — fills the
+      // header on desktop instead of leaving an empty gap after the logo
+      flex-grow: 1;
+
       border-left: 1px solid color(secondary);
 
       @include mq(desktop-xs) {

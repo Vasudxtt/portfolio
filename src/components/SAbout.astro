@@ -55,8 +55,8 @@
   </div>
   <div class="s__edge s__edge--r" aria-hidden="true">
     <div class="s__edge__track">
-      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
-      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2003&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
+      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2002&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2002&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
+      <span>Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2002&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;Mumbai&nbsp;→&nbsp;Vellore&nbsp;✦&nbsp;Est.&nbsp;2002&nbsp;✦&nbsp;Open&nbsp;to&nbsp;work&nbsp;✦&nbsp;</span>
     </div>
   </div>
 
@@ -1382,11 +1382,6 @@
         transparent
       );
 
-      // hidden only on the smallest phones, where the side margins disappear
-      @include mq(phone) {
-        display: none;
-      }
-
       &--l {
         left: 2rem;
       }
@@ -1403,6 +1398,18 @@
 
         &--r {
           right: 0.85rem;
+        }
+      }
+
+      // keep the side rails on phones too (tucked right against the edges) so the
+      // mobile About has the same vertical-line energy as desktop, full height
+      @include mq(phone) {
+        &--l {
+          left: 0.25rem;
+        }
+
+        &--r {
+          right: 0.25rem;
         }
       }
 
@@ -1430,6 +1437,12 @@
         @include mq(tablet-sm) {
           font-size: 0.75rem;
           letter-spacing: 0.22em;
+        }
+
+        @include mq(phone) {
+          font-size: 0.625rem;
+          letter-spacing: 0.18em;
+          opacity: 0.6;
         }
       }
     }
