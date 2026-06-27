@@ -786,6 +786,21 @@
 
     overflow: hidden;
 
+    // evenly-distributed blueprint dot-grid so the background always reads as
+    // intentional (never empty) — most important on phones where the side
+    // marquees are hidden. Theme-safe via color-mix on the ink colour.
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, color(secondary) 15%, transparent) 1.1px,
+      transparent 1.6px
+    );
+    background-size: 26px 26px;
+    background-position: center;
+
+    @include mq(tablet-sm) {
+      background-size: 20px 20px;
+    }
+
     @include mq(desktop-xs) {
       --width: 36rem;
     }

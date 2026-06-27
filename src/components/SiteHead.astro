@@ -25,11 +25,6 @@ const menu = [
       </a>
     </div><!-- .sb-logo -->
 
-    <div class="sb-console" role="presentation">
-      <div class="sb-console__inner js-console">
-      </div><!-- .sb-console__inner -->
-    </div><!-- .sb-console -->
-
     <nav class="sb-menu">
       <ul class="sb__list">
         {
@@ -606,6 +601,7 @@ const menu = [
      * Update console
      */
     updateConsole(time) {
+      if (!this.console) return
       if (!this.canWrite || time - this.lastTypeTime < this.writeDelay) {
         return
       }
@@ -726,41 +722,6 @@ const menu = [
         @include mq(phone) {
           font-size: 1.55rem;
         }
-      }
-    }
-
-    .sb-console {
-      @include flex(column, flex-start, flex-end);
-
-      margin: 0 auto 0 0;
-      padding: 1.5rem;
-
-      font: 400 8px / 1.4 font-family(fraktion);
-      text-transform: uppercase;
-      white-space: pre-line;
-
-      // the 8px message ticker reads as an empty box on small screens — desktop only
-      @include mq(tablet) {
-        display: none;
-      }
-
-      @keyframes site-head-caret {
-        0%,
-        100% {
-          opacity: 1;
-        }
-
-        50% {
-          opacity: 0;
-        }
-      }
-
-      &__inner {
-        @include flex(column, flex-start, flex-end);
-
-        height: 5.6em;
-
-        overflow: hidden;
       }
     }
 
