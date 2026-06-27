@@ -215,26 +215,24 @@ const menu = [
 
       // Properties
       this.messages = [
-        'Compiling caffeine into code',
-        'Shipping pixels from Mumbai',
-        'Full-stack, full-send',
-        'npm run dream',
-        'Turning ideas into deploys',
-        'MERN stack… online',
-        'Bending React to my will',
-        'Centering a div… nailed it',
-        'Querying MongoDB for inspiration',
-        'Pushing to main on a Friday',
-        'Refactoring, then refactoring again',
-        'Brewing the next big build',
-        'console.log("let\'s build")',
-        'Optimising every millisecond',
-        'Designing like it matters',
-        'Crafting clean, fast, kind code',
-        'From zero to deployed',
-        'Chai loaded. Focus engaged.',
-        'Make it work. Make it beautiful.',
-        'Building things people remember',
+        "Vasudutt here — code, chai, repeat",
+        "MERN by day, RDR by night",
+        "Shipping deploys, Arthur Morgan style",
+        "Respawning after every bug — COD reflexes",
+        "Mumbai-made, Vellore-trained",
+        "Chai loaded. COD lobby on hold.",
+        "Clean code, high honour — RDR rules",
+        "git push, then one more COD match",
+        "Full-stack dev, part-time outlaw",
+        "Tracking bugs like RDR bounties",
+        "Headshots in COD, ship-shots in prod",
+        "React · Node · Mongo — and a killstreak",
+        "console.log('lets ride')",
+        "Building immersive things, end to end",
+        "From zero to deployed",
+        "Focus engaged. COD can wait.",
+        "Honor, loyalty, and clean commits",
+        "Building things people remember",
       ]
       this.message = ''
       this.messageLineBreak = false
@@ -613,6 +611,9 @@ const menu = [
       if (this.message === '') {
         this.message = this.getRandomMessage()
         this.writeDelay = 2000
+        // start each new message on its own line (clean stacked lines on desktop,
+        // a single current-message ticker on mobile)
+        if (this.console.textContent !== '') this.messageLineBreak = true
       } else {
         if (this.message === this.lastMessage || this.messageLineBreak) {
           this.console.textContent += '\n'
@@ -688,8 +689,11 @@ const menu = [
       width: 100%;
       height: 6rem;
 
-      @include mq(phone) {
-        height: 4rem;
+      // on small screens the console drops to a full-width second row, so let the
+      // bar grow instead of clipping it
+      @include mq(tablet) {
+        flex-wrap: wrap;
+        height: auto;
       }
     }
 
@@ -745,9 +749,20 @@ const menu = [
       text-transform: uppercase;
       white-space: pre-line;
 
-      // desktop-only — at this size on a phone it would read as an empty box
+      // on small screens it can't live in the cramped bar, so it becomes a
+      // full-width single-line ticker strip below the header row (still legible)
       @include mq(tablet) {
-        display: none;
+        order: 10;
+        width: 100%;
+
+        @include flex(row, flex-start, center);
+
+        margin: 0;
+        padding: 0.5rem 1rem;
+
+        border-top: 1px solid color(secondary);
+
+        font-size: 10px;
       }
 
       &__inner {
@@ -756,6 +771,15 @@ const menu = [
         height: 5.4em;
 
         overflow: hidden;
+
+        // mobile: collapse to a single visible line (the newest), left-aligned —
+        // bottom-justified column + 1-line height keeps only the live message
+        @include mq(tablet) {
+          align-items: flex-start;
+          justify-content: flex-end;
+
+          height: 1.5em;
+        }
       }
     }
 
