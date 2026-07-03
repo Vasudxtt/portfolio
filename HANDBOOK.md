@@ -12,7 +12,7 @@
 - Your honest level: **~1.2 years**, junior full-stack. You ship real things. That's your strength — talk about **what you built and the decisions you made**, not buzzwords.
 
 ### Your 30-second pitch
-> "I'm Vasudutt, a full-stack developer from VIT Vellore, currently building live client products at ItXiTPro. I work mainly in the MERN stack — React, Node, Express, MongoDB — plus WordPress and PHP for client sites. I like owning a feature end to end: designing the UI, building the API, wiring the database, and shipping it. Recently I've been building AI-powered tools using LLM APIs."
+> "I'm Vasudutt, a full-stack developer from VIT Vellore, currently building live client products at ItXiTPro. I work across the stack — React, Next.js and TypeScript on the front, Node, Express, Prisma and Postgres on the back — plus WordPress and PHP for client sites. I like owning a feature end to end: designing the UI, building the API, wiring the database, and shipping it. Recently I've been building AI-powered tools with the OpenAI and Groq APIs."
 
 ---
 
