@@ -267,6 +267,23 @@ User clicks → React calls `fetch('/api/users')` → Express route receives it 
 
 ---
 
+## 3.5 The new signings — added to the squad, know them cold
+
+> These are now on your portfolio, so interviewers WILL ask. Same rule: what it is, why, one likely question.
+
+- **Astro** — static-site framework that ships zero JS by default ("islands" add interactivity only where needed). *Why:* your portfolio runs on it — instant loads, great Lighthouse. *Q: "Why Astro over Next?"* → Content-first sites don't need a full React runtime; Astro renders to plain HTML and hydrates only the interactive islands.
+- **GSAP** — the industry-standard JS animation library (timelines, ScrollTrigger). *Why:* powers your portfolio's scroll effects. *Q:* "CSS vs GSAP?" → CSS for simple transitions; GSAP for orchestrated, scroll-linked, or interrupted animations.
+- **Prisma** — type-safe ORM for Node/TypeScript. Schema file → generated client → autocompleted queries. *Q: "Why an ORM?"* → Type safety end to end, migrations, no hand-rolled SQL injection risks — but know when raw SQL wins (complex reports).
+- **PostgreSQL** — the serious relational DB: ACID, joins, JSON columns, full-text search. *Q: "Postgres vs MySQL?"* → Broadly similar; Postgres has richer types (JSONB, arrays), better standards compliance — you pick per project/team.
+- **Redis** — in-memory key-value store. *Why:* caching hot data, sessions, rate-limiting. *Q:* "Where would you add it?" → Cache expensive DB queries or API responses with a TTL; sessions in multi-server setups.
+- **Docker** — containers: your app + its exact environment, runs the same everywhere. `Dockerfile` → image → container. *Q: "Container vs VM?"* → Containers share the host kernel — start in ms, MBs not GBs.
+- **AWS** — the cloud. Know the big four: **EC2** (servers), **S3** (file storage), **RDS** (managed databases), **Lambda** (serverless functions). *Q:* "How would you deploy your app on AWS?" → Container on EC2/ECS or Lambda for the API, RDS Postgres, S3 for assets.
+- **GitHub Actions** — CI/CD in your repo: on every push, run tests/lint/build, then deploy. A YAML file in `.github/workflows/`. *Q:* "What's in your pipeline?" → install → lint → test → build → deploy on main.
+- **Auth.js / JWT / OAuth** — Auth.js = the Next.js auth library (sessions, providers). JWT = signed token the client sends per request (stateless). OAuth = "log in with Google" — delegated access via an authorization server. *Q: "Session vs JWT?"* → Sessions store state on the server (easy revocation); JWTs are stateless (scale easily, harder to revoke — use short expiry + refresh tokens).
+- **OpenAI API / LLM Integration / AI Agents** — calling LLMs from your backend (never expose keys client-side), prompt design, streaming responses. An **agent** = an LLM in a loop with tools: it decides, calls a function/API, reads the result, repeats. *Q:* "How do you keep LLM output reliable?" → Constrain with system prompts + structured output (JSON schema), validate before using, and keep a human/deterministic fallback.
+
+---
+
 ## 4. Your Projects — how to talk about them
 
 > For each: **what it does → stack → why those choices → one thing you're proud of → likely follow-up.**
