@@ -288,6 +288,29 @@ User clicks → React calls `fetch('/api/users')` → Express route receives it 
 
 > For each: **what it does → stack → why those choices → one thing you're proud of → likely follow-up.**
 
+### ShipLog — dev shipping log + AI standup (the proof-of-stack project)
+- **What:** Log one-liners of what you shipped each day (feature/fix/chore/learn), track a
+  consecutive-day shipping streak, and generate an AI standup (*Shipped / Learned / Next*)
+  from the last 7 days via Groq (Llama 3.3). Works with **no API key** too — falls back to a
+  deterministic local summary.
+- **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind v4 · Prisma · **PostgreSQL** ·
+  hand-rolled **JWT auth** (bcryptjs + jose, httpOnly cookie) · **Docker** (multi-stage,
+  non-root) · docker-compose Postgres · **GitHub Actions** CI · **Vitest** (13 unit tests).
+- **Why hand-rolled auth (they WILL ask):** → "The point was to show I understand sessions,
+  not hide them behind a library: bcrypt hashes with cost 12, jose signs an HS256 JWT into an
+  httpOnly SameSite cookie, and edge middleware verifies it. bcrypt only runs in Node routes;
+  the middleware only verifies — each runtime does what it's good at."
+- **Security details worth name-dropping:** same 401 for wrong email vs wrong password (no
+  user enumeration); ownership enforced *in the query* (`deleteMany({ id, userId })`), not in
+  a forgettable if-check; zod validation on every input; secrets only in env.
+- **Testing story:** streak logic is a pure function — 6 test cases including the
+  "yesterday keeps the streak alive" grace rule and same-day dedupe; prompt builder and
+  no-key fallback are tested too. CI runs typecheck → tests → build on every push.
+- **Follow-up: "How does the AI part work?"** → "The API route pulls the user's last 7 days
+  from Postgres, a pure function builds the prompt, and I call Groq's OpenAI-compatible
+  endpoint with plain fetch — no SDK. If the key is missing or the provider errors, the
+  route returns a local deterministic summary instead of failing."
+
 ### Roadmap2077 — AI career platform
 - **What:** Personalized career roadmaps, exam planners, AI question papers, Resume AI, unlimited AI mentorship.
 - **Stack:** Node.js, Express, **Groq API** (LLM), HTML/CSS/JS.
